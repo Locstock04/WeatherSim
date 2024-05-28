@@ -2,6 +2,23 @@
 
 #include <iostream>
 
+void Weather::Projection()
+{
+	for (size_t i = 0; i < projectionIterations; i++)
+	{
+		for (size_t col = 0; col < map.getColCount(); col++)
+		{
+			for (size_t row = 0; row < map.getRowCount(); row++)
+			{
+
+				ForceIncompressibilityAt(col, row);
+				//total += getAverageWindVelocityAt(col, row);
+
+			}
+		}
+	}
+}
+
 Weather::Weather()
 {
 	std::srand(1337);
@@ -34,20 +51,8 @@ void Weather::Update()
 {
 	//Vec2 total(0, 0);
 
+	Projection();
 
-
-	for (size_t col = 0; col < map.getColCount(); col++)
-	{
-		for (size_t row = 0; row < map.getRowCount(); row++)
-		{
-
-
-
-
-			ForceIncompressibilityAt(col, row);
-			//total += getAverageWindVelocityAt(col, row);
-		}
-	}
 	//total /= map.getSize();
 	//std::cout << total.x << ", " << total.y << "\n";
 
@@ -76,6 +81,7 @@ void Weather::ForceIncompressibilityAt(int col, int row)
 	down += balance;
 	up -= balance;
 	
+	atCell.pressure += balance.GetMagnitude() * ((atCell.density * gridSpacing) / timeStep);
 }
 
 Vec2 Weather::getAverageWindVelocityAt(int col, int row)

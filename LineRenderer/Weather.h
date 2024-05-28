@@ -10,6 +10,11 @@ private:
 
 	float timeStep = 0.1f;
 	
+	void ForceIncompressibilityAt(int col, int row);
+	void Projection();
+	int projectionIterations = 10;
+
+	float const gridSpacing = 1.0f;
 
 public:
 
@@ -27,11 +32,12 @@ public:
 	Weather();
 	void Update();
 
+
+
 	// Should be greater than 1 and less than 2
 	float overRelaxation = 1.9f;
 
 	bool calculatingPressure = true;
-	void ForceIncompressibilityAt(int col, int row);
 	Vec2 getAverageWindVelocityAt(int col, int row);
 	float getPressureAt(int col, int row);
 	Array2D<Cell, 10, 10> map;

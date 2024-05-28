@@ -8,9 +8,10 @@ class WeatherLinerRenderer : public Application
 private:
 	Weather weather;
 
-	float scaleLineLengthViewBy = 1.0f;
+	float scaleLineLengthViewBy = 0.4f;
 	float distanceBetween2AdjacentCells = 1.0f;
 	
+	float dragMultiplier = 1.0f;
 
 	float lineArrowSize = 0.1f;
 	bool showLineArrows = true;
@@ -19,6 +20,8 @@ private:
 
 	bool drawWindVelocity = true;
 	bool drawPressure = true;
+	
+	Vec2 previousCursorPos;
 
 	void DrawWindVelocities();
 	void GUI();
@@ -28,6 +31,8 @@ public:
 	void Update(float delta) override;
 
 	void OnLeftClick() override;
+
+	void OnRightClick() override;
 
 };
 

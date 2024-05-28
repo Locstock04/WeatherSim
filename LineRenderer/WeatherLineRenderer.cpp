@@ -48,11 +48,12 @@ void WeatherLinerRenderer::DrawWindVelocities()
 
 void WeatherLinerRenderer::GUI()
 {
-	if (ImGui::Begin("Draw Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::DragFloat("Scale Line Length", &scaleLineLengthViewBy, guiDragSpeed);
 		ImGui::DragFloat("Between Line Distance", &distanceBetween2AdjacentCells, guiDragSpeed);
 		ImGui::Checkbox("Draw Line Tips", &showLineArrows);
-		ImGui::DragFloat("Line Tips Size", &lineArrowSize);
+		ImGui::DragFloat("Line Tips Size", &lineArrowSize, guiDragSpeed);
+		ImGui::DragFloat("Left click change multiplayer", &dragMultiplier, guiDragSpeed);
 	}
 	ImGui::End();
 }
@@ -70,12 +71,28 @@ void WeatherLinerRenderer::Update(float delta)
 	
 	GUI();
 
-	if (leftMouseDown) {
+	if (rightMouseDown) {
 		weather.Update();
+	}
+
+	if (leftMouseDown) {
+		Weather::Cell& cell = weather.map((int)cursorPos.x, (int)cursorPos.y);
+		Vec2 newVelocity = (cursorPos - previousCursorPos) * dragMultiplier;
+		cell.leftVelocity += newVelocity;
+		cell.topVelocity += newVelocity;
+
+		previousCursorPos = cursorPos;
 	}
 }
 
 void WeatherLinerRenderer::OnLeftClick()
 {
 	//weather.Update();
+
+	previousCursorPos = cursorPos;
+}
+
+void WeatherLinerRenderer::OnRightClick()
+{
+
 }
