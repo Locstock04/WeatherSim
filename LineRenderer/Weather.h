@@ -12,6 +12,7 @@ private:
 	
 	void ForceIncompressibilityAt(int col, int row);
 	void Projection();
+	void Advection();
 	int projectionIterations = 10;
 
 	float const gridSpacing = 1.0f;

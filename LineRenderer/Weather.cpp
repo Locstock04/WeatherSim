@@ -19,6 +19,11 @@ void Weather::Projection()
 	}
 }
 
+void Weather::Advection()
+{
+
+}
+
 Weather::Weather()
 {
 	std::srand(1337);

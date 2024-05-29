@@ -1,9 +1,11 @@
 #pragma once
 #include "Application.h"
 
+#include "LineRenderer.h"
+
 #include "Weather.h"
 
-class WeatherLinerRenderer : public Application
+class WeatherLineRenderer : public Application
 {
 private:
 	Weather weather;
@@ -14,19 +16,27 @@ private:
 	float dragMultiplier = 1.0f;
 
 	float lineArrowSize = 0.1f;
-	bool showLineArrows = true;
+	bool showSideLines = true;
+	bool showCentreLines = true;
+	bool showCentreCircles = true;
 
 	float guiDragSpeed = 0.1f;
 
-	bool drawWindVelocity = true;
 	bool drawPressure = true;
 	
 	Vec2 previousCursorPos;
 
-	void DrawWindVelocities();
+	void DrawWindSideVelocities();
+	void DrawCentreWindVelocities();
+
+	void DrawArrow(Vec2 begin, Vec2 end, Colour colour);
+	static Colour ColourFromVector(Vec2 vec);
+
 	void GUI();
 public:
-	WeatherLinerRenderer();
+
+
+	WeatherLineRenderer();
 
 	void Update(float delta) override;
 
