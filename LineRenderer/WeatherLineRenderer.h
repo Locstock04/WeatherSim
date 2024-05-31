@@ -19,11 +19,14 @@ private:
 	bool showSideLines = true;
 	bool showCentreLines = true;
 	bool showCentreCircles = true;
+	bool showDensity = true;
+	bool showPressure = true;
 
 	float guiDragSpeed = 0.1f;
 
-	bool drawPressure = true;
+	bool updatingWeather = true;
 	
+
 	Vec2 previousCursorPos;
 
 	void DrawWindSideVelocities();
@@ -33,6 +36,9 @@ private:
 	static Colour ColourFromVector(Vec2 vec);
 
 	void GUI();
+
+	Vec2 worldToCellPos(float x, float y);
+
 public:
 
 
@@ -44,5 +50,7 @@ public:
 
 	void OnRightClick() override;
 
+	void OnMiddleClick() override;
+	void OnMiddleRelease() override;
 };
 

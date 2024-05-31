@@ -9,34 +9,34 @@ template<typename T, int _cols, int _rows>
 class Array2D // TODO: Named array but really using a vector
 {
 private:
-	int rows = _rows;
-	int cols = _cols;
 
 	std::vector<T> data;
 
 	int getIndex(int col, int row) const;
 public:
 
+	const int rows = _rows;
+	const int cols = _cols;
+
 	Array2D();
 	T& operator ()(int col, int row);
 
 
-	int getRowCount() const;
-	int getColCount() const;
 	int getSize() const;
 
 	typename std::vector<T>::iterator Begin();
 	typename std::vector<T>::iterator End();
 };
 
-template<typename T, int _rows, int _cols>
-inline int Array2D<T, _rows, _cols>::getIndex(int row, int col) const
+
+template<typename T, int _cols, int _rows>
+inline int Array2D<T, _cols, _rows>::getIndex(int col, int row) const
 {
 	return row * cols + col;
 }
 
-template<typename T, int _rows, int _cols>
-inline Array2D<T, _rows, _cols>::Array2D()
+template<typename T, int _cols, int _rows>
+inline Array2D<T, _cols, _rows>::Array2D()
 {
 	data.resize(getSize());
 }
@@ -47,20 +47,7 @@ inline T& Array2D<T, _cols, _rows>::operator()(int col, int row)
 	col = (col % cols + cols) % cols;
 	row = (row % rows + rows) % rows;
 
-
 	return data[getIndex(col, row)];
-}
-
-template<typename T, int _cols, int _rows>
-inline int Array2D<T, _cols, _rows>::getRowCount() const
-{
-	return rows;
-}
-
-template<typename T, int _cols, int _rows>
-inline int Array2D<T, _cols, _rows>::getColCount() const
-{
-	return cols;
 }
 
 template<typename T, int _cols, int _rows>
