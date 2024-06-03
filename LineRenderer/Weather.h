@@ -4,7 +4,7 @@
 
 #include "Maths.h"
 
-constexpr auto MAP_SIZE = 10;
+constexpr auto MAP_SIZE = 20;
 
 class Weather
 {
@@ -19,17 +19,19 @@ private:
 
 	float const gridSpacing = 1.0f;
 
-	Vec2 CalculateDivergence(Vec2 right, Vec2 left, Vec2 up, Vec2 down);
+	float CalculateDivergence(float right, float left, float up, float down);
 
 public:
 
 	class Cell {
 	public:
 		//Vec2 windVelocity;
-		Vec2 leftVelocity;
-		Vec2 upVelocity;
+		float leftVelocity;
+		float upVelocity;
 
+		
 		float pressure = 0.0f;
+		
 		// Cloud
 		float density = 0.0f;
 	};
@@ -48,8 +50,5 @@ public:
 	bool calculatingPressure = true;
 	Vec2 getAverageWindVelocityAt(int col, int row);
 	float getPressureAt(int col, int row);
-
-	void RandomiseMapVelocities();
-
 
 };

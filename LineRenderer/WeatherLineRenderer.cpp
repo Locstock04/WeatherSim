@@ -3,6 +3,7 @@
 
 #include "imgui.h"
 
+
 void WeatherLineRenderer::DrawWindSideVelocities()
 {
 	for (size_t c = 0; c < weather.map.cols; c++)
@@ -16,12 +17,12 @@ void WeatherLineRenderer::DrawWindSideVelocities()
 
 			Vec2 leftPos = Vec2(c - 0.5f, r);
 			Vec2 topPos = Vec2(c, r + 0.5f);
-			Vec2 left = weather.map(c, r).leftVelocity;
-			Vec2 top = weather.map(c, r).upVelocity;
-			Colour leftColour = ColourFromVector(left);
-			Colour topColour = ColourFromVector(top);
-			Vec2 leftLineEnd = leftPos + (left * scaleLineLengthViewBy);
-			Vec2 topLineEnd = topPos + (top * scaleLineLengthViewBy);
+			float left = weather.map(c, r).leftVelocity;
+			float top = weather.map(c, r).upVelocity;
+			Colour leftColour = ColourFromVector({ left, 0.0f });
+			Colour topColour = ColourFromVector({ 0.0f, top });
+			Vec2 leftLineEnd = leftPos + (Vec2(left, 0.0f) * scaleLineLengthViewBy);
+			Vec2 topLineEnd = topPos + (Vec2(0.0f, top) * scaleLineLengthViewBy);
 
 			DrawArrow(leftPos, leftLineEnd, leftColour);
 			DrawArrow(topPos, topLineEnd, topColour);
@@ -86,6 +87,8 @@ Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
 
 WeatherLineRenderer::WeatherLineRenderer()
 {
+	image = new Image("test.png", STBI_grey);
+
 	//updatingWeather = !updatingWeather;
 }
 
@@ -134,10 +137,10 @@ void WeatherLineRenderer::Update(float delta)
 		Weather::Cell& rightCell = weather.map(intPos.x + 1, intPos.y);
 		Weather::Cell& downCell = weather.map(intPos.x, intPos.y - 1);
 		Vec2 newVelocity = (cursorPos - previousCursorPos) * dragMultiplier;
-		atCell.leftVelocity += newVelocity;
-		atCell.upVelocity += newVelocity;
-		rightCell.leftVelocity += newVelocity;
-		downCell.upVelocity += newVelocity;
+		atCell.leftVelocity += newVelocity.x;
+		atCell.upVelocity += newVelocity.y;
+		rightCell.leftVelocity += newVelocity.x;
+		downCell.upVelocity += newVelocity.y;
 
 		previousCursorPos = cursorPos;
 	}
@@ -157,7 +160,21 @@ void WeatherLineRenderer::OnRightClick()
 
 void WeatherLineRenderer::OnMiddleClick()
 {
-	weather.Update();
+	if (image->data == nullptr) { return; }
+
+	for (size_t c = 0; c < weather.map.cols; c++)
+	{
+		for (size_t r = 0; r < weather.map.rows; r++)
+		{
+			
+			weather.map(c, r).density = image->data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
+
+
+		}
+	}
+
+
+	//weather.Update();
 	//updatingWeather = !updatingWeather;
 }
 

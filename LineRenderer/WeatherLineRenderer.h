@@ -5,6 +5,9 @@
 
 #include "Weather.h"
 
+#include "Image.h"
+
+
 class WeatherLineRenderer : public Application
 {
 private:
@@ -28,6 +31,8 @@ private:
 	
 
 	Vec2 previousCursorPos;
+
+	Image* image;
 
 	void DrawWindSideVelocities();
 	void DrawCentreWindVelocities();

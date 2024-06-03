@@ -161,6 +161,7 @@
     <ClCompile Include="Example.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GLFWCallbacks.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="LineRenderer.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="ApplicationHarness.cpp" />
@@ -190,11 +191,13 @@
     <ClInclude Include="glad.h" />
     <ClInclude Include="GLFWCallbacks.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="khrplatform.h" />
     <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="Maths.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="ApplicationHarness.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextStream.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Vec2.h" />

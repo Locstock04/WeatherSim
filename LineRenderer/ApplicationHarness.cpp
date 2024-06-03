@@ -181,7 +181,7 @@ void ApplicationHarness::Render()
 	float orthoMat[16];
 	PopulateCameraTransform(orthoMat);
 	simpleShader.SetMat4Uniform("vpMatrix", orthoMat);
-	grid.Draw();
+	//grid.Draw();
 	lines.Draw();
 
 

@@ -6,7 +6,7 @@
 // TODO: This is specifically made for the weather map
 
 template<typename T, int _cols, int _rows>
-class Array2D // TODO: Named array but really using a vector
+class Array2D // TODO: Named array but really using a vector, this class is poorly named in general
 {
 private:
 
