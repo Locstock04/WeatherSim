@@ -26,7 +26,7 @@ public:
 	class Cell {
 	public:
 		//Vec2 windVelocity;
-		float leftVelocity;
+		float leftVelocity; // TODO: Should be right instead, as when this is positive it is 'right'
 		float upVelocity;
 
 		

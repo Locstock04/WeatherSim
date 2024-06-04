@@ -59,7 +59,7 @@ void WeatherLineRenderer::GUI()
 
 Vec2 WeatherLineRenderer::worldToCellPos(float x, float y)
 {
-	return Vec2((int)(x + 0.5f), (int)(y + 0.5f));
+	return Vec2(round(x + 0.5f), round(y + 0.5f));
 }
 
 void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour)
@@ -88,8 +88,7 @@ Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
 WeatherLineRenderer::WeatherLineRenderer()
 {
 	image = new Image("test.png", STBI_grey);
-
-	//updatingWeather = !updatingWeather;
+	updatingWeather = !updatingWeather;
 }
 
 void WeatherLineRenderer::Update(float delta)
@@ -155,7 +154,8 @@ void WeatherLineRenderer::OnLeftClick()
 
 void WeatherLineRenderer::OnRightClick()
 {
-
+	//updatingWeather = !updatingWeather;
+	weather.Update();
 }
 
 void WeatherLineRenderer::OnMiddleClick()

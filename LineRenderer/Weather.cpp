@@ -14,7 +14,6 @@ void Weather::Projection()
 		{
 			for (size_t row = 0; row < map.rows; row++)
 			{
-
 				ForceIncompressibilityAt(col, row);
 				//total += getAverageWindVelocityAt(col, row);
 
@@ -92,37 +91,81 @@ void Weather::Advection()
 
 			//Vec2 wind = getAverageWindVelocityAt(col, row);
 			Cell& at = map(c, r);
-			const Cell& left = map(c - 1, r);
-			const Cell& down = map(c, r - 1);
-			const Cell& downLeft = map(c - 1, r - 1);
+			const Cell& leftCell = map(c - 1, r);
+			const Cell& rightCell = map(c + 1, r);
+			const Cell& downCell = map(c, r - 1);
+			const Cell& downLeftCell = map(c - 1, r - 1);
+			const Cell& upCell = map(c, r + 1);
+			const Cell& upRightCell = map(c + 1, r + 1);
 
+
+			
 			// x, leftVelocity
 			{
-				Vec2 pos = { c - (gridSpacing / 2), r };
-				float yVel = (at.upVelocity + left.upVelocity + downLeft.upVelocity + down.upVelocity) / 4;
+				Vec2 pos = { c - (gridSpacing / 2.0f), (float)r };
+				float yVel = (at.upVelocity + leftCell.upVelocity + downLeftCell.upVelocity + downCell.upVelocity) / 4;
 				Vec2 vel = { at.leftVelocity, yVel };
 
 				Vec2 previousPos = pos - vel;
 
-				Vec2 previousCellPos = { (int)previousPos.x, (int)previousPos.y };
+				Vec2 previousCellPos = { round(previousPos.x), round(previousPos.y + (gridSpacing / 2)) };
 
-				const Cell& previous = map(previousCellPos.x, previousCellPos.y);
-				const Cell& previousDown = map(previousCellPos.x, previousCellPos.y - 1);
-				const Cell& previousLeft = map(previousCellPos.x - 1, previousCellPos.y);
-				const Cell& previousDownLeft = map(previousCellPos.x - 1, previousCellPos.y - 1);
+				const float downLeft = map(previousCellPos.x, previousCellPos.y).leftVelocity;
+				const float downRight = map(previousCellPos.x + 1, previousCellPos.y).leftVelocity;
+				const float upLeft = map(previousCellPos.x, previousCellPos.y + 1).leftVelocity;
+				const float upRight = map(previousCellPos.x + 1, previousCellPos.y + 1).leftVelocity;
+
+				// Would be positive
+				float yDistanceFromDown = previousPos.y - (previousCellPos.y - (gridSpacing / 2));
+				float xDistanceFromLeft = previousPos.x - (previousCellPos.x - (gridSpacing / 2));
+
+				float rightWeight = (xDistanceFromLeft / gridSpacing);
+				float leftWeight = 1 - (xDistanceFromLeft / gridSpacing);
+				float upWeight = (yDistanceFromDown / gridSpacing);
+				float downWeight = 1 - (yDistanceFromDown / gridSpacing);
 
 				float previousPosVelX = 
+					upWeight * leftWeight * upLeft +
+					upWeight * rightWeight * upRight +
+					downWeight * leftWeight * downLeft +
+					downWeight * rightWeight * downRight;
 
+				at.leftVelocity = previousPosVelX;
 			}
 			// y, upVelocity
 			{
+				Vec2 pos = { (float)c, r + (gridSpacing / 2.0f) };
+				float xVel = (at.leftVelocity + rightCell.leftVelocity + upCell.leftVelocity + upRightCell.leftVelocity) / 4;
+				Vec2 vel = { xVel, at.upVelocity };
 
+				Vec2 previousPos = pos - vel;
+
+				// Add half a grid to ensure we use the correct numbers for the weighted average
+				Vec2 previousCellPos = { round(previousPos.x + (gridSpacing / 2)), round(previousPos.y) };
+
+				const float upRight = map(previousPos.x, previousPos.y).upVelocity;
+				const float downRight = map(previousPos.x, previousPos.y - 1).upVelocity;
+				const float upLeft = map(previousPos.x - 1, previousPos.y).upVelocity;
+				const float downLeft = map(previousPos.x - 1, previousPos.y - 1).upVelocity;
+					
+				float yDistanceFromDown = previousPos.y - (previousCellPos.y - (gridSpacing / 2));
+				float xDistanceFromLeft = previousPos.x - (previousCellPos.x - (gridSpacing / 2));
+
+				float rightWeight = (xDistanceFromLeft / gridSpacing);
+				float leftWeight = 1 - (xDistanceFromLeft / gridSpacing);
+				float upWeight = (yDistanceFromDown / gridSpacing);
+				float downWeight = 1 - (yDistanceFromDown / gridSpacing);
+
+				float previousPosVelY = 
+					upWeight * leftWeight * upLeft +
+					upWeight * rightWeight * upRight +
+					downWeight * leftWeight * downLeft +
+					downWeight * rightWeight * downRight;
+
+				at.upVelocity = previousPosVelY;
 			}
 		}
 	}
-
-
-
 }
 
 float Weather::CalculateDivergence(float right, float left, float up, float down)
