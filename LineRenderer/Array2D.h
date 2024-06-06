@@ -15,8 +15,9 @@ private:
 	int getIndex(int col, int row) const;
 public:
 
-	const int rows = _rows;
-	const int cols = _cols;
+	// TODO: If these are const then the assignment operator gets implicitly deleted.
+	int rows = _rows;
+	int cols = _cols;
 
 	Array2D();
 	T& operator ()(int col, int row);

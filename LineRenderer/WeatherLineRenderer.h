@@ -19,11 +19,13 @@ private:
 	float dragMultiplier = 1.0f;
 
 	float lineArrowSize = 0.1f;
-	bool showSideLines = true;
-	bool showCentreLines = true;
-	bool showCentreCircles = true;
+	bool showSideLines = false;
+	bool showCentreLines = false;
+	bool showCentreCircles = false;
 	bool showDensity = true;
 	bool showPressure = true;
+
+	Vec2 setAllWindTo = { 0, 0 };
 
 	float guiDragSpeed = 0.1f;
 

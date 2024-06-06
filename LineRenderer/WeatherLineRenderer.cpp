@@ -51,15 +51,25 @@ void WeatherLineRenderer::GUI()
 		ImGui::Checkbox("Draw Side Lines", &showSideLines);
 		ImGui::Checkbox("Draw Centre Lines", &showCentreLines);
 		ImGui::Checkbox("Draw Centre Circles", &showCentreCircles);
+		ImGui::Checkbox("Draw Density (Cross)", &showDensity);
+		ImGui::Checkbox("Draw Pressure", &showPressure);
+		ImGui::Checkbox("Update Simulation", &updatingWeather);
 		ImGui::DragFloat("Line Tips Size", &lineArrowSize, guiDragSpeed);
 		ImGui::DragFloat("Left click change multiplayer", &dragMultiplier, guiDragSpeed);
+		ImGui::DragFloat2("Wind Editor", &setAllWindTo.x, guiDragSpeed);
+		if (ImGui::Button("Set Wind")) {
+			weather.setAllWindTo(setAllWindTo);
+		}
+
+		//float tempColour[4];
+		//ImGui::ColorPicker4("Temp colour", tempColour);
 	}
 	ImGui::End();
 }
 
 Vec2 WeatherLineRenderer::worldToCellPos(float x, float y)
 {
-	return Vec2(round(x + 0.5f), round(y + 0.5f));
+	return Vec2(round(x), round(y));
 }
 
 void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour)
@@ -88,7 +98,7 @@ Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
 WeatherLineRenderer::WeatherLineRenderer()
 {
 	image = new Image("test.png", STBI_grey);
-	updatingWeather = !updatingWeather;
+	//updatingWeather = !updatingWeather;
 }
 
 void WeatherLineRenderer::Update(float delta)
@@ -104,7 +114,7 @@ void WeatherLineRenderer::Update(float delta)
 		{
 			for (size_t r = 0; r < weather.map.rows; r++)
 			{
-				lines->DrawCircle(Vec2(c, r), 0.3, ColourFromVector(weather.getAverageWindVelocityAt(c, r)));
+				lines->DrawCircle(Vec2(c, r), 0.3, ColourFromVector(weather.getAverageWindVelocityAt(c, r)), 4);
 			}
 		}
 	}
@@ -160,18 +170,19 @@ void WeatherLineRenderer::OnRightClick()
 
 void WeatherLineRenderer::OnMiddleClick()
 {
-	if (image->data == nullptr) { return; }
+	weather.Projection();
+	//if (image->data == nullptr) { return; }
 
-	for (size_t c = 0; c < weather.map.cols; c++)
-	{
-		for (size_t r = 0; r < weather.map.rows; r++)
-		{
-			
-			weather.map(c, r).density = image->data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
+	//for (size_t c = 0; c < weather.map.cols; c++)
+	//{
+	//	for (size_t r = 0; r < weather.map.rows; r++)
+	//	{
+	//		
+	//		weather.map(c, r).density = image->data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
 
 
-		}
-	}
+	//	}
+	//}
 
 
 	//weather.Update();
