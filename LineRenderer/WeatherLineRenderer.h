@@ -22,8 +22,8 @@ private:
 	bool showSideLines = false;
 	bool showCentreLines = false;
 	bool showCentreCircles = false;
-	bool showDensity = true;
-	bool showPressure = true;
+	bool showDensity = false;
+	bool showPressure = false;
 
 	Vec2 setAllWindTo = { 0, 0 };
 
