@@ -56,6 +56,7 @@ void WeatherLineRenderer::GUI()
 		ImGui::Checkbox("Update Simulation", &updatingWeather);
 		ImGui::DragFloat("Line Tips Size", &lineArrowSize, guiDragSpeed);
 		ImGui::DragFloat("Left click change multiplayer", &dragMultiplier, guiDragSpeed);
+		ImGui::DragFloat("timeStep", &weather.timeStep);
 		ImGui::DragFloat2("Wind Editor", &setAllWindTo.x, guiDragSpeed);
 		if (ImGui::Button("Set Wind")) {
 			weather.setAllWindTo(setAllWindTo);

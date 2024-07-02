@@ -10,4 +10,4 @@ int main()
 	program.Run();
 
 	return 0;
-}	
+}
