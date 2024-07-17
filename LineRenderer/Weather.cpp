@@ -116,44 +116,157 @@ void Weather::AdvectionOfField()
 	{
 		for (int r = 0; r < map.rows; r++)
 		{
-			// Work out velocity at spot (velocity spot)
-			// Figure out what the prevoius position would have been
-			//
+			// TODO skip if zero
+
+			// X
+			{
+				Cell& at = map(c, r);
+				const Cell& left = map(c - 1, r);
+				const Cell& down = map(c, r - 1);
+				const Cell& downLeft = map(c - 1, r - 1);
+
+				float x = at.leftVelocity;
+				float y = (at.upVelocity + left.upVelocity + down.upVelocity + downLeft.upVelocity) / 4;
+
+				Vec2 prevPos = { c - (timeStep * x), r - (timeStep * y) };
+
+				int prevC = round(prevPos.x);
+				// Floor instead because of how/where the velocities are stored
+				int prevR = floor(prevPos.y);
+				const Cell& prevAt = map(prevC, prevR);
+
+				const Cell& prevRight = map(prevC + 1, prevR);
+				const Cell& prevDown = map(prevC, prevR - 1);
+				const Cell& prevDownRight = map(prevC + 1, prevR - 1);
+
+				float distanceFromDown = prevPos.y - prevR;
+				float distanceFromLeft = prevPos.x - prevC;
+
+				// Weights
+				float wUp = distanceFromDown / gridSpacing;
+				float wDown = 1 - wUp;
+				float wRight = distanceFromLeft / gridSpacing;
+				float wLeft = 1 - wRight;
+
+				float interpolatedX =
+					prevAt.leftVelocity * wLeft * wUp +
+					prevRight.leftVelocity * wRight * wUp +
+					prevDown.leftVelocity * wLeft * wDown +
+					prevDownRight.leftVelocity * wRight * wDown;
+
+				at.leftVelocity = interpolatedX;
+			}
+
+			// Y
+			{
+				Cell& at = map(c, r);
+
+				const Cell& up = map(c, r - 1);
+				const Cell& upRight = map(c + 1, r);
+				const Cell& right = map(c + 1, r);
+
+				float x = (at.leftVelocity + up.leftVelocity + right.leftVelocity + upRight.leftVelocity) / 4;
+				float y = at.upVelocity;
+
+				Vec2 prevPos = { c - (timeStep * x), r - (timeStep * y) };
+
+				int prevC = floor(prevPos.x);
+				int prevR = round(prevPos.y);
+
+				const Cell& prevAt = map(prevC, prevR);
+				const Cell& prevDown = map(prevC, prevR - 1);
+				const Cell& prevRight = map(prevC + 1, prevR);
+				const Cell& prevDownRight = map(prevC + 1, prevR - 1);
+
+				float distanceFromDown = prevPos.y - prevR;
+				float distanceFromLeft = prevPos.x - prevC;
 
 
-			//Vec2 wind = getAverageWindVelocityAt(col, row);
-			Cell& at = map(c, r);
-			const Cell& leftCell = map(c - 1, r);
-			const Cell& rightCell = map(c + 1, r);
-			const Cell& downCell = map(c, r - 1);
-			const Cell& downLeftCell = map(c - 1, r - 1);
-			const Cell& upCell = map(c, r + 1);
-			const Cell& upRightCell = map(c + 1, r + 1);
+			}
 
 
-			// TODO: please put these into function
-			//AdvectSingleVelocity(leftVelocity, upVelocity, c - (gridSpacing / 2.0f), (float)r);
-			//AdvectSingleVelocity(upVelocity, leftVelocity, (float)c, r + (gridSpacing / 2.0f));
+
+			//// Work out velocity at spot (velocity spot)
+			//// Figure out what the prevoius position would have been
+			////
 
 
-			// This one seems good
-			//// x, leftVelocity
+			////Vec2 wind = getAverageWindVelocityAt(col, row);
+			//Cell& at = map(c, r);
+			//const Cell& leftCell = map(c - 1, r);
+			//const Cell& rightCell = map(c + 1, r);
+			//const Cell& downCell = map(c, r - 1);
+			//const Cell& downLeftCell = map(c - 1, r - 1);
+			//const Cell& upCell = map(c, r + 1);
+			//const Cell& upRightCell = map(c + 1, r + 1);
+
+
+			//// TODO: please put these into function
+			////AdvectSingleVelocity(leftVelocity, upVelocity, c - (gridSpacing / 2.0f), (float)r);
+			////AdvectSingleVelocity(upVelocity, leftVelocity, (float)c, r + (gridSpacing / 2.0f));
+
+
+			//// This one seems good
+			////// x, leftVelocity
+			////{
+			////	// Pos should be the left velocity spot of the grid
+			////	Vec2 pos = { c - (gridSpacing / 2.0f), (float)r };
+			////	float yVel = (at.upVelocity + leftCell.upVelocity + downLeftCell.upVelocity + downCell.upVelocity) / 4;
+			////	Vec2 vel = { at.leftVelocity, yVel };
+
+			////	Vec2 previousPos = pos - (vel * timeStep);
+
+			////	Vec2 previousCellPos = { round(previousPos.x/* + 0.5f*/), round(previousPos.y) };
+
+			////	const float upLeft = map(previousCellPos.x, previousCellPos.y).leftVelocity;
+			////	const float upRight = map(previousCellPos.x + 1, previousCellPos.y).leftVelocity;
+			////	const float downLeft = map(previousCellPos.x, previousCellPos.y).leftVelocity;
+			////	const float downRight = map(previousCellPos.x + 1, previousCellPos.y).leftVelocity;
+
+			////	// Would be positive
+			////	float yDistanceFromDown = previousPos.y - (previousCellPos.y - (gridSpacing / 2));
+			////	float xDistanceFromLeft = previousPos.x - (previousCellPos.x - (gridSpacing / 2));
+
+			////	float leftWeight = 1 - (xDistanceFromLeft / gridSpacing);
+			////	float rightWeight = (xDistanceFromLeft / gridSpacing);
+			////	float upWeight = (yDistanceFromDown / gridSpacing);
+			////	float downWeight = 1 - (yDistanceFromDown / gridSpacing);
+
+			////	float previousPosVelX = 
+			////		upWeight * (leftWeight * upLeft + rightWeight * upRight) +
+			////		downWeight * (leftWeight * downLeft + rightWeight * downRight);
+
+			////	at.leftVelocity = previousPosVelX;
+
+			////	if (r == c && r == 0) {
+			////		//std::cout << "\n";
+			////		std::cout <<
+			////			"\n         pos: " << pos.x << ", " << pos.y <<
+			////			"\nPrevious pos: " << previousPos.x << ", " << previousPos.y <<
+			////			"\nPreviousCpos: " << previousCellPos.x << ", " << previousCellPos.y <<
+			////			"\nPrevPos VelX:" << previousPosVelX <<
+			////			
+			////			"\n\n";
+			////	}
+			////}
+
+
+			//// y, upVelocity
 			//{
-			//	// Pos should be the left velocity spot of the grid
-			//	Vec2 pos = { c - (gridSpacing / 2.0f), (float)r };
-			//	float yVel = (at.upVelocity + leftCell.upVelocity + downLeftCell.upVelocity + downCell.upVelocity) / 4;
-			//	Vec2 vel = { at.leftVelocity, yVel };
+			//	Vec2 pos = { (float)c, r + (gridSpacing / 2.0f) };
+			//	float xVel = (at.leftVelocity + rightCell.leftVelocity + upCell.leftVelocity + upRightCell.leftVelocity) / 4;
+			//	Vec2 vel = { xVel, at.upVelocity };
 
 			//	Vec2 previousPos = pos - (vel * timeStep);
 
-			//	Vec2 previousCellPos = { round(previousPos.x/* + 0.5f*/), round(previousPos.y) };
+			//	// Add half a grid to ensure we use the correct numbers for the weighted average
+			//	Vec2 previousCellPos = { round(previousPos.x ), round(previousPos.y) };
 
-			//	const float upLeft = map(previousCellPos.x, previousCellPos.y).leftVelocity;
-			//	const float upRight = map(previousCellPos.x + 1, previousCellPos.y).leftVelocity;
-			//	const float downLeft = map(previousCellPos.x, previousCellPos.y).leftVelocity;
-			//	const float downRight = map(previousCellPos.x + 1, previousCellPos.y).leftVelocity;
-
-			//	// Would be positive
+			//	const float upLeft = map(previousPos.x - 1, previousPos.y).upVelocity;
+			//	const float upRight = map(previousPos.x, previousPos.y).upVelocity;
+			//	const float downLeft = map(previousPos.x - 1, previousPos.y - 1).upVelocity;
+			//	const float downRight = map(previousPos.x, previousPos.y - 1).upVelocity;
+			//		
 			//	float yDistanceFromDown = previousPos.y - (previousCellPos.y - (gridSpacing / 2));
 			//	float xDistanceFromLeft = previousPos.x - (previousCellPos.x - (gridSpacing / 2));
 
@@ -162,11 +275,11 @@ void Weather::AdvectionOfField()
 			//	float upWeight = (yDistanceFromDown / gridSpacing);
 			//	float downWeight = 1 - (yDistanceFromDown / gridSpacing);
 
-			//	float previousPosVelX = 
+			//	float previousPosVelY = 
 			//		upWeight * (leftWeight * upLeft + rightWeight * upRight) +
 			//		downWeight * (leftWeight * downLeft + rightWeight * downRight);
 
-			//	at.leftVelocity = previousPosVelX;
+			//	at.upVelocity = previousPosVelY;
 
 			//	if (r == c && r == 0) {
 			//		//std::cout << "\n";
@@ -174,54 +287,11 @@ void Weather::AdvectionOfField()
 			//			"\n         pos: " << pos.x << ", " << pos.y <<
 			//			"\nPrevious pos: " << previousPos.x << ", " << previousPos.y <<
 			//			"\nPreviousCpos: " << previousCellPos.x << ", " << previousCellPos.y <<
-			//			"\nPrevPos VelX:" << previousPosVelX <<
-			//			
+			//			"\nPrevPos VelX:" << previousPosVelY <<
+			//
 			//			"\n\n";
 			//	}
 			//}
-
-
-			// y, upVelocity
-			{
-				Vec2 pos = { (float)c, r + (gridSpacing / 2.0f) };
-				float xVel = (at.leftVelocity + rightCell.leftVelocity + upCell.leftVelocity + upRightCell.leftVelocity) / 4;
-				Vec2 vel = { xVel, at.upVelocity };
-
-				Vec2 previousPos = pos - (vel * timeStep);
-
-				// Add half a grid to ensure we use the correct numbers for the weighted average
-				Vec2 previousCellPos = { round(previousPos.x ), round(previousPos.y) };
-
-				const float upLeft = map(previousPos.x - 1, previousPos.y).upVelocity;
-				const float upRight = map(previousPos.x, previousPos.y).upVelocity;
-				const float downLeft = map(previousPos.x - 1, previousPos.y - 1).upVelocity;
-				const float downRight = map(previousPos.x, previousPos.y - 1).upVelocity;
-					
-				float yDistanceFromDown = previousPos.y - (previousCellPos.y - (gridSpacing / 2));
-				float xDistanceFromLeft = previousPos.x - (previousCellPos.x - (gridSpacing / 2));
-
-				float leftWeight = 1 - (xDistanceFromLeft / gridSpacing);
-				float rightWeight = (xDistanceFromLeft / gridSpacing);
-				float upWeight = (yDistanceFromDown / gridSpacing);
-				float downWeight = 1 - (yDistanceFromDown / gridSpacing);
-
-				float previousPosVelY = 
-					upWeight * (leftWeight * upLeft + rightWeight * upRight) +
-					downWeight * (leftWeight * downLeft + rightWeight * downRight);
-
-				at.upVelocity = previousPosVelY;
-
-					if (r == c && r == 0) {
-						//std::cout << "\n";
-						std::cout <<
-							"\n         pos: " << pos.x << ", " << pos.y <<
-							"\nPrevious pos: " << previousPos.x << ", " << previousPos.y <<
-							"\nPreviousCpos: " << previousCellPos.x << ", " << previousCellPos.y <<
-							"\nPrevPos VelX:" << previousPosVelY <<
-			
-							"\n\n";
-					}
-			}
 		}
 	}
 }

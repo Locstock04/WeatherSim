@@ -9,6 +9,8 @@ constexpr auto MAP_SIZE = 50;
 class Weather
 {
 private:
+
+
 public: // TODO: remove public
 	float timeStep = 1.0f / 60.0f;
 	
