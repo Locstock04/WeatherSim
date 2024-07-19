@@ -4,7 +4,7 @@
 
 #include "Maths.h"
 
-constexpr auto MAP_SIZE = 50;
+constexpr auto MAP_SIZE = 20;
 
 class Weather
 {

@@ -121,6 +121,7 @@ void Weather::AdvectionOfField()
 			// X
 			{
 				Cell& at = map(c, r);
+				Vec2 pos = Vec2(c - 0.5f, r);
 				const Cell& left = map(c - 1, r);
 				const Cell& down = map(c, r - 1);
 				const Cell& downLeft = map(c - 1, r - 1);
@@ -128,19 +129,19 @@ void Weather::AdvectionOfField()
 				float x = at.leftVelocity;
 				float y = (at.upVelocity + left.upVelocity + down.upVelocity + downLeft.upVelocity) / 4;
 
-				Vec2 prevPos = { c - (timeStep * x), r - (timeStep * y) };
+				Vec2 prevPos = { pos.x - (timeStep * x), pos.y - (timeStep * y) };
 
 				int prevC = round(prevPos.x);
-				// Floor instead because of how/where the velocities are stored
-				int prevR = floor(prevPos.y);
+				// Ceil instead because of how/where the velocities are stored
+				int prevR = ceil(prevPos.y);
 				const Cell& prevAt = map(prevC, prevR);
 
 				const Cell& prevRight = map(prevC + 1, prevR);
 				const Cell& prevDown = map(prevC, prevR - 1);
 				const Cell& prevDownRight = map(prevC + 1, prevR - 1);
 
-				float distanceFromDown = prevPos.y - prevR;
-				float distanceFromLeft = prevPos.x - prevC;
+				float distanceFromDown = prevPos.y - ( prevR - 1 );
+				float distanceFromLeft = prevPos.x - ( prevC - 0.5f);
 
 				// Weights
 				float wUp = distanceFromDown / gridSpacing;
@@ -155,20 +156,42 @@ void Weather::AdvectionOfField()
 					prevDownRight.leftVelocity * wRight * wDown;
 
 				at.leftVelocity = interpolatedX;
+
+					if (r == c && r == 10) {
+		//std::cout << "\n";
+		std::cout <<
+			"\n     CellPos: " << c << ", " << r <<
+			"\n         pos: " << pos.x << ", " << pos.y <<
+			"\nPrevious pos: " << prevPos.x << ", " << prevPos.y <<
+			"\nPreviousCpos: " << prevC << ", " << prevR <<
+			"\nDis From D  : " << distanceFromDown <<
+			"\nDis From L  : " << distanceFromLeft <<
+			"\nUp Weight   : " << wUp <<
+			"\nRight Weight: " << wRight <<
+			"\nDown Weight : " << wDown <<
+			"\nLeft Weight : " << wLeft <<
+			"\nPrevPos VelX: " << interpolatedX <<
+			
+			"\n\n";
+			}
+
 			}
 
 			// Y
 			{
 				Cell& at = map(c, r);
+				Vec2 pos = Vec2(c, r + 0.5f);
 
 				const Cell& up = map(c, r - 1);
 				const Cell& upRight = map(c + 1, r);
 				const Cell& right = map(c + 1, r);
 
+
+
 				float x = (at.leftVelocity + up.leftVelocity + right.leftVelocity + upRight.leftVelocity) / 4;
 				float y = at.upVelocity;
 
-				Vec2 prevPos = { c - (timeStep * x), r - (timeStep * y) };
+				Vec2 prevPos = { pos.x - (timeStep * x), pos.y - (timeStep * y) };
 
 				int prevC = floor(prevPos.x);
 				int prevR = round(prevPos.y);
@@ -181,8 +204,43 @@ void Weather::AdvectionOfField()
 				float distanceFromDown = prevPos.y - prevR;
 				float distanceFromLeft = prevPos.x - prevC;
 
+				// Weights
+
+				float wUp = distanceFromDown / gridSpacing;
+				float wDown = 1 - wUp;
+				float wRight = distanceFromLeft / gridSpacing;
+				float wLeft = 1 - wRight;
+
+				float interpolatedY =
+					prevAt.upVelocity			* wDown * wLeft
+					+  prevDown.upVelocity		* wUp	* wLeft
+					+  prevRight.upVelocity		* wDown	* wRight
+					+  prevDownRight.upVelocity	* wUp	* wRight;
+
+
+				at.upVelocity = interpolatedY;
+
+
+				if (r == c && r == 10) {
+					//std::cout << "\n";
+					std::cout <<
+						"\n     CellPos: " << c << ", " << r <<
+						"\n         pos: " << pos.x << ", " << pos.y <<
+						"\nPrevious pos: " << prevPos.x << ", " << prevPos.y <<
+						"\nPreviousCpos: " << prevC << ", " << prevR <<
+						"\nDis From D  : " << distanceFromDown <<
+						"\nDis From L  : " << distanceFromLeft <<
+						"\nUp Weight   : " << wUp <<
+						"\nRight Weight: " << wRight <<
+						"\nDown Weight : " << wDown <<
+						"\nLeft Weight : " << wLeft <<
+						"\nPrevPos VelY: " << interpolatedY <<
+
+						"\n\n";
+				}
 
 			}
+		}
 
 
 
@@ -292,7 +350,7 @@ void Weather::AdvectionOfField()
 			//			"\n\n";
 			//	}
 			//}
-		}
+		
 	}
 }
 
@@ -325,12 +383,12 @@ void Weather::Update()
 	//Projection();
 	//setBordersTo({ 0.0f, 0.0f });
 
-	Projection();
-
+	//Projection();
+//
 	AdvectionOfField();
 	//setBordersTo({ 0.0f, 0.0f });
 	
-	Projection();
+	//Projection();
 
 	//setBordersTo({ 0.0f, 0.0f });
 	//total /= map.getSize();

@@ -20,8 +20,8 @@ private:
 
 	float lineArrowSize = 0.1f;
 	bool showSideLines = false;
-	bool showCentreLines = false;
-	bool showCentreCircles = false;
+	bool showCentreLines = true;
+	bool showCentreCircles = true;
 	bool showDensity = false;
 	bool showPressure = false;
 
@@ -29,7 +29,7 @@ private:
 
 	float guiDragSpeed = 0.1f;
 
-	bool updatingWeather = true;
+	bool updatingWeather = false;
 	
 
 	Vec2 previousCursorPos;
