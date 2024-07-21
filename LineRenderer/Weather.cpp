@@ -53,17 +53,17 @@ void Weather::AdvectionOfField()
 }
 
 // TODO: This honestly looks worse then the previously used macro
-float Weather::SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset)
+float Weather::SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset) const
 {
-	const float upLeft =    *((float*)( (char*)&(map(c, r))         + variableOffset));
-	const float upRight =   *((float*)( (char*)&(map(c + 1, r))     + variableOffset));
-	const float downLeft =  *((float*)( (char*)&(map(c, r - 1))     + variableOffset));
-	const float downRight = *((float*)( (char*)&(map(c + 1, r - 1)) + variableOffset));
+	const float upLeft =    *((float*)( (char*)&(map.getConst(c, r))         + variableOffset));
+	const float upRight =   *((float*)( (char*)&(map.getConst(c + 1, r))     + variableOffset));
+	const float downLeft =  *((float*)( (char*)&(map.getConst(c, r - 1))     + variableOffset));
+	const float downRight = *((float*)( (char*)&(map.getConst(c + 1, r - 1)) + variableOffset));
 	                                                                                 
 	return GetWeightedValue(upLeft, upRight, downLeft, downRight, distanceFromDown, distanceFromLeft);
 }
 
-float Weather::GetWeightedValue(float upLeft, float upRight, float downLeft, float downRight, float distanceFromDown, float distanceFromLeft)
+float Weather::GetWeightedValue(float upLeft, float upRight, float downLeft, float downRight, float distanceFromDown, float distanceFromLeft) const
 {
 	float leftWeight = 1 - distanceFromLeft;
 	float rightWeight = distanceFromLeft;
@@ -74,7 +74,7 @@ float Weather::GetWeightedValue(float upLeft, float upRight, float downLeft, flo
 		   downWeight * (leftWeight * downLeft + rightWeight * downRight);
 }
 
-float Weather::getXVelocityAt(float x, float y)
+float Weather::getXVelocityAt(float x, float y) const
 {
 	int cellC = round(x);
 	int cellR = ceil(y);
@@ -84,7 +84,7 @@ float Weather::getXVelocityAt(float x, float y)
 	return SampleField(cellC, cellR, distanceFromDown, distanceFromLeft, offsetof(Cell, leftVelocity));
 }
 
-float Weather::getYVelocityAt(float x, float y)
+float Weather::getYVelocityAt(float x, float y) const
 {
 	int cellC = floor(x);
 	int cellR = round(y);
@@ -95,49 +95,62 @@ float Weather::getYVelocityAt(float x, float y)
 	return SampleField(cellC, cellR, distanceFromDown, distanceFromLeft, offsetof(Cell, upVelocity));
 }
 
-Vec2 Weather::getVelocityAt(float x, float y)
+Vec2 Weather::getVelocityAt(float x, float y) const
 {
 	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
 }
 
 void Weather::AdvectionOfClouds()
 {
+	for (int c = 0; c < map.cols; c++)
+	{
+		for (int r = 0; r < map.rows; r++)
+		{
+			Cell& at = map(c, r);
+			if (!at.nonSolid) {
+				continue;
+			}
+			Vec2 pos = { (float)c, (float)r };
+			Vec2 vel = getVelocityAt(c, r);
 
+			Vec2 prevPos = pos - (vel * timeStep);
+			int prevC = floor(prevPos.x);
+			int prevR = ceil(prevPos.y);
+
+			float distanceFromDown = prevPos.y - (prevR - 1.0f);
+			float distanceFromLeft = prevPos.x - (prevC);
+
+			at.density = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, density));
+
+			if (r == c && r == 10) {
+				//std::cout << "\n";
+				std::cout <<
+					"\n     CellPos: " << c << ", " << r <<
+					"\n         pos: " << pos.x << ", " << pos.y <<
+					"\nPrevious pos: " << prevPos.x << ", " << prevPos.y <<
+					"\nPreviousCpos: " << prevC << ", " << prevR <<
+					"\nVelocity    : " << vel.x << ", " << vel.y << 
+					"\nDisFrom Down: " << distanceFromDown << 
+					"\nDisFrom Left: " << distanceFromLeft <<
+
+					"\n\n";
+			}
+		}
+	}
 }
 
 
 Weather::Weather()
 {
 	setBordersTo();
-	//RandomiseMapVelocities();
-	//map(0, 0).windVelocity = { -1, -1 };
-	//map(2, 2).windVelocity = { -1, -1 };
-	//map(4, 4).windVelocity = { -1, -1 };
-	//map(6, 6).windVelocity = { -1, -1 };
-	//map(4, 6).windVelocity = { -1, -1 };
-	//map(4, 8).windVelocity = { -1, -1 };
 }
 
 void Weather::Update()
 {
-	//Vec2 total(0, 0);
-
-	//Projection();
-	//setBordersTo({ 0.0f, 0.0f });
-
 	Projection();
-//
+
 	AdvectionOfField();
-
-	//setBordersTo({ 0.0f, 0.0f });
-	
-	//Projection();
-
-	//setBordersTo({ 0.0f, 0.0f });
-	//total /= map.getSize();
-	//std::cout << total.x << ", " << total.y << "\n";
-
-	//std::cout << (total, Vec2(0, 0)).GetMagnitude() << "\n";
+	AdvectionOfClouds();
 }
 
 float Weather::getDeltaTime() const
@@ -163,7 +176,6 @@ void Weather::setBordersTo()
 			if (c != 0 && c != map.cols - 1 && r != 0 && r != map.rows - 1) { continue; }
 
 			Cell& cell = map(c, r);
-			cell.density = 1.0f;
 			cell.nonSolid = false;
 		}
 	}
@@ -200,19 +212,19 @@ void Weather::ForceIncompressibilityAt(int col, int row)
 	up -= balance * upCell.nonSolid;
 	
 	// TODO: below might be wrong
-	atCell.pressure += abs(balance) * ((atCell.density * 1) / timeStep);
+	//atCell.pressure += abs(balance) * ((atCell.density * 1) / timeStep);
 }
 
-Vec2 Weather::getAverageWindVelocityAt(int col, int row)
+Vec2 Weather::getAverageWindVelocityAt(int col, int row) const
 {
-	const Cell& at = map(col, row);
-	const Cell& below = map(col, row - 1);
-	const Cell& right = map(col + 1, row);
+	const Cell& at = map.getConst(col, row);
+	const Cell& below = map.getConst(col, row - 1);
+	const Cell& right = map.getConst(col + 1, row);
 
 	return (Vec2(at.leftVelocity + right.leftVelocity, at.upVelocity + below.upVelocity)) / 4.0f;
 }
 
-float Weather::getPressureAt(int col, int row)
+float Weather::getPressureAt(int col, int row) const
 {
 	// TODO:
 	return 0.0f;

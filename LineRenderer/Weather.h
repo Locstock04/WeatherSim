@@ -4,7 +4,7 @@
 
 #include "Maths.h"
 
-constexpr auto MAP_SIZE = 20;
+constexpr auto MAP_SIZE = 50;
 
 class Weather
 {
@@ -19,13 +19,13 @@ public: // TODO: remove public
 	void AdvectionOfField();
 
 	//float VelocityAt()
-	float SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset);
+	float SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset) const;
 	
-	float GetWeightedValue(float upLeft, float upRight, float downLeft, float downRight, float distanceFromDown, float distanceFromLeft);
+	float GetWeightedValue(float upLeft, float upRight, float downLeft, float downRight, float distanceFromDown, float distanceFromLeft) const;
 
-	float getXVelocityAt(float x, float y);
-	float getYVelocityAt(float x, float y);
-	Vec2 getVelocityAt(float x, float y);
+	float getXVelocityAt(float x, float y) const;
+	float getYVelocityAt(float x, float y) const;
+	Vec2 getVelocityAt(float x, float y) const;
 
 
 	void AdvectionOfClouds();
@@ -35,13 +35,10 @@ public:
 	class Cell {
 	public:
 		//Vec2 windVelocity;
-		float leftVelocity; // TODO: Should be right instead, as when this is positive it is 'right'
-		float upVelocity;
-
-		//// TODO: this is a temporary attempt at a solution, remove
-		//float maxVelocityInSingleDirection = 2.0f;
+		float leftVelocity = 0.0f; // TODO: Should be right instead, as when this is positive it is 'right', this is poorly named as it represents the velocity at the left spot
+		float upVelocity = 0.0f;
 		
-		float pressure = 0.0f;
+		//float pressure = 0.0f;
 		
 		// Cloud
 		float density = 0.0f;
@@ -63,7 +60,7 @@ public:
 	float overRelaxation = 1.9f;
 
 	bool calculatingPressure = true;
-	Vec2 getAverageWindVelocityAt(int col, int row);
-	float getPressureAt(int col, int row);
+	Vec2 getAverageWindVelocityAt(int col, int row) const;
+	float getPressureAt(int col, int row) const;
 
 };

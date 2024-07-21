@@ -23,7 +23,7 @@ private:
 	bool showCentreLines = true;
 	bool showCentreCircles = true;
 	bool showDensity = false;
-	bool showPressure = false;
+	bool showWater = false;
 
 	Vec2 setAllWindTo = { 0, 0 };
 
@@ -37,18 +37,20 @@ private:
 
 	Image* image;
 
-	void DrawWindSideVelocities();
-	void DrawCentreWindVelocities();
+	void DrawWindSideVelocities() const;
+	void DrawCentreWindVelocities() const;
 
-	void DrawArrow(Vec2 begin, Vec2 end, Colour colour);
+	void DrawArrow(Vec2 begin, Vec2 end, Colour colour) const;
 	static Colour ColourFromVector(Vec2 vec);
 
 	void GUI();
 
-	Vec2 worldToCellPos(float x, float y);
+	static Vec2 worldToCellPos(float x, float y);
 
 	static Colour hslToRgb(float h, float s, float l);
 	static float hueToRgb(float p, float q, float t);
+
+	void Draw() const;
 
 public:
 
