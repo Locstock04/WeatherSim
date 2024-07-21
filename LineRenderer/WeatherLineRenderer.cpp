@@ -3,6 +3,8 @@
 
 #include "imgui.h"
 
+#include <iostream>
+
 
 void WeatherLineRenderer::DrawWindSideVelocities()
 {
@@ -54,7 +56,7 @@ void WeatherLineRenderer::GUI()
 		ImGui::Checkbox("Draw Density (Cross)", &showDensity);
 		ImGui::Checkbox("Draw Pressure", &showPressure);
 		ImGui::Checkbox("Update Simulation", &updatingWeather);
-		ImGui::Checkbox("Jacobi (non Gauss-Seidel)", &weather.jacobi);
+		//ImGui::Checkbox("Jacobi (non Gauss-Seidel)", &weather.jacobi);
 		ImGui::Checkbox("Right click draw solid", &drawingSolid);
 		ImGui::DragFloat("Line Tips Size", &lineArrowSize, guiDragSpeed);
 		ImGui::DragFloat("Left click change multiplayer", &dragMultiplier, guiDragSpeed);
@@ -63,9 +65,6 @@ void WeatherLineRenderer::GUI()
 		if (ImGui::Button("Set Wind")) {
 			weather.setAllWindTo(setAllWindTo);
 		}
-
-		//float tempColour[4];
-		//ImGui::ColorPicker4("Temp colour", tempColour);
 	}
 	ImGui::End();
 }
@@ -73,6 +72,47 @@ void WeatherLineRenderer::GUI()
 Vec2 WeatherLineRenderer::worldToCellPos(float x, float y)
 {
 	return Vec2(round(x), round(y));
+}
+
+Colour WeatherLineRenderer::hslToRgb(float h, float s, float l)
+{
+	Colour rgb{0, 0, 0};
+
+	if (0 == s) {
+		rgb.r = rgb.g = rgb.b = l; // achromatic
+	}
+	else {
+		float q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+		float p = 2 * l - q;
+		rgb.r = hueToRgb(p, q, h + 1.0f / 3.0f);
+		rgb.g = hueToRgb(p, q, h);
+		rgb.b = hueToRgb(p, q, h - 1.0f / 3.0f);
+	}
+
+	return rgb;
+}
+
+float WeatherLineRenderer::hueToRgb(float p, float q, float t)
+{
+	if (t < 0) {
+		t += 1;
+	}
+	if (t > 1) {
+		t -= 1;
+	}
+	if (t < 1.0f / 6.0f) {
+		return p + (q - p) * 6 * t;
+	}
+	else if (t < 1.0f / 2.0f) {
+		return q;
+	}
+	else if (t < 2.0 / 3.0f) {
+		return p + (q - p) * (2. / 3 - t) * 6;
+	}
+	else {
+		return p;
+	}
+
 }
 
 void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour)
@@ -95,7 +135,9 @@ void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour)
 
 Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
 {
-	return Colour(vec.x / 2.0f + 0.5f, vec.y / 2.0f + 0.5f, -vec.x / 2.0f + 0.5f);
+	float hue = (-(atan2f(vec.x, -vec.y) / PI) + 1) / 2;
+	float l = std::min(vec.GetMagnitude(), 0.5f);
+	return hslToRgb(hue, 1.0f, l);
 }
 
 WeatherLineRenderer::WeatherLineRenderer()

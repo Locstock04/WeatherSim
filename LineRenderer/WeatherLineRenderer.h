@@ -47,6 +47,9 @@ private:
 
 	Vec2 worldToCellPos(float x, float y);
 
+	static Colour hslToRgb(float h, float s, float l);
+	static float hueToRgb(float p, float q, float t);
+
 public:
 
 
