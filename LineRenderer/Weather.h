@@ -17,10 +17,19 @@ public: // TODO: remove public
 	void ForceIncompressibilityAt(int col, int row);
 	void Projection();
 	void AdvectionOfField();
+
+	//float VelocityAt()
+	float SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset);
+	
+	float GetWeightedValue(float upLeft, float upRight, float downLeft, float downRight, float distanceFromDown, float distanceFromLeft);
+
+	float getXVelocityAt(float x, float y);
+	float getYVelocityAt(float x, float y);
+	Vec2 getVelocityAt(float x, float y);
+
+
 	void AdvectionOfClouds();
 	int projectionIterations = 50;
-
-	bool jacobi = false;
 public:
 
 	class Cell {
