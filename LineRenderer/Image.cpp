@@ -11,3 +11,10 @@ Image::Image(std::string _path, int forceLoadType) :
 		return;
 	}
 }
+
+Image::Image() :
+	width(0),
+	height(0),
+	path("")
+{
+}
