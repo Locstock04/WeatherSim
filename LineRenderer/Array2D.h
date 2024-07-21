@@ -10,6 +10,7 @@ class Array2D // TODO: Named array but really using a vector, this class is poor
 {
 private:
 
+public:
 	std::vector<T> data;
 
 	int getIndex(int col, int row) const;

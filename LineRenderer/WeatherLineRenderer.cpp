@@ -54,6 +54,8 @@ void WeatherLineRenderer::GUI()
 		ImGui::Checkbox("Draw Density (Cross)", &showDensity);
 		ImGui::Checkbox("Draw Pressure", &showPressure);
 		ImGui::Checkbox("Update Simulation", &updatingWeather);
+		ImGui::Checkbox("Jacobi (non Gauss-Seidel)", &weather.jacobi);
+		ImGui::Checkbox("Right click draw solid", &drawingSolid);
 		ImGui::DragFloat("Line Tips Size", &lineArrowSize, guiDragSpeed);
 		ImGui::DragFloat("Left click change multiplayer", &dragMultiplier, guiDragSpeed);
 		ImGui::DragFloat("timeStep", &weather.timeStep);
@@ -138,8 +140,9 @@ void WeatherLineRenderer::Update(float delta)
 
 	if (rightMouseDown) {
 		Vec2 cellPos = worldToCellPos(cursorPos.x, cursorPos.y);
-		weather.map(cellPos.x, cellPos.y).density += 5 * weather.getDeltaTime();
+		weather.map(cellPos.x, cellPos.y).nonSolid = !drawingSolid;
 	}
+
 
 	if (leftMouseDown) {
 		Vec2 intPos = worldToCellPos(cursorPos.x, cursorPos.y);
@@ -166,12 +169,11 @@ void WeatherLineRenderer::OnLeftClick()
 void WeatherLineRenderer::OnRightClick()
 {
 	//updatingWeather = !updatingWeather;
-	weather.Update();
 }
 
 void WeatherLineRenderer::OnMiddleClick()
 {
-	weather.Projection();
+	//weather.Projection();
 	//if (image->data == nullptr) { return; }
 
 	//for (size_t c = 0; c < weather.map.cols; c++)

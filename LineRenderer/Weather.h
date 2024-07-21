@@ -20,10 +20,7 @@ public: // TODO: remove public
 	void AdvectionOfClouds();
 	int projectionIterations = 50;
 
-	float const gridSpacing = 1.0f;
-
-	float CalculateDivergence(float right, float left, float up, float down);
-
+	bool jacobi = false;
 public:
 
 	class Cell {
@@ -40,7 +37,7 @@ public:
 		// Cloud
 		float density = 0.0f;
 
-		bool solid = false;
+		bool nonSolid = true;
 	};
 
 	Array2D<Cell, MAP_SIZE, MAP_SIZE> map;
@@ -51,7 +48,7 @@ public:
 	float getDeltaTime() const;
 
 	void setAllWindTo(Vec2 wind);
-	void setBordersTo(Vec2 wind);
+	void setBordersTo();
 
 	// Should be greater than 1 and less than 2
 	float overRelaxation = 1.9f;

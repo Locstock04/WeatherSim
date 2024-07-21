@@ -31,6 +31,7 @@ private:
 
 	bool updatingWeather = false;
 	
+	bool drawingSolid = true;
 
 	Vec2 previousCursorPos;
 
