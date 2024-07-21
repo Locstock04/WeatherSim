@@ -52,6 +52,31 @@ void Weather::AdvectionOfField()
 	}
 }
 
+void Weather::WaterCycle()
+{
+	float evaporationChange = evaporationRate * timeStep;
+	float percipitationChange = percipitationRate * timeStep;
+	for (Cell& cell : map.data)
+	{
+		// Evaporation
+		if (cell.water) {
+			cell.density = std::min(cell.density + evaporationChange, maxCloudDensity);
+		}
+		
+		// Percipitation
+		// If it raining and should stop, or if not and should be
+		if ((cell.raining && cell.density < stopRainDensity) || (!cell.raining && cell.density > startRainDensity)) {
+			cell.raining = !cell.raining;
+		}
+
+		
+		if (cell.raining) {
+			cell.density = std::max(cell.density - percipitationChange, 0.0f);
+		}
+	}
+}
+
+
 // TODO: This honestly looks worse then the previously used macro
 float Weather::SampleField(int c, int r, float distanceFromDown, float distanceFromLeft, size_t variableOffset) const
 {
@@ -100,6 +125,44 @@ Vec2 Weather::getVelocityAt(float x, float y) const
 	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
 }
 
+void Weather::SetWater(std::string path)
+{
+	waterMap = Image(path, STBI_grey);
+	if (waterMap.data == nullptr) { return; }
+
+	if (waterMap.width != map.cols || waterMap.height != map.rows) {
+		std::cout << "Warning: Mismatched image size with map\n";
+		return;
+	}
+
+	for (size_t c = 0; c < map.cols; c++)
+	{
+		for (size_t r = 0; r < map.rows; r++)
+		{
+			map(c, r).water = (waterMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f) > 0.5f ? true : false;
+		}
+	}
+}
+
+void Weather::SetCloud(std::string path)
+{
+	cloudMap = Image(path, STBI_grey);
+	if (cloudMap.data == nullptr) { return; }
+
+	if (cloudMap.width != map.cols || cloudMap.height != map.rows) {
+		std::cout << "Warning: Mismatched image size with map\n";
+		return;
+	}
+
+	for (size_t c = 0; c < map.cols; c++)
+	{
+		for (size_t r = 0; r < map.rows; r++)
+		{
+			map(c, r).density = cloudMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f;
+		}
+	}
+}
+
 void Weather::AdvectionOfClouds()
 {
 	for (int c = 0; c < map.cols; c++)
@@ -121,20 +184,6 @@ void Weather::AdvectionOfClouds()
 			float distanceFromLeft = prevPos.x - (prevC);
 
 			at.density = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, density));
-
-			if (r == c && r == 10) {
-				//std::cout << "\n";
-				std::cout <<
-					"\n     CellPos: " << c << ", " << r <<
-					"\n         pos: " << pos.x << ", " << pos.y <<
-					"\nPrevious pos: " << prevPos.x << ", " << prevPos.y <<
-					"\nPreviousCpos: " << prevC << ", " << prevR <<
-					"\nVelocity    : " << vel.x << ", " << vel.y << 
-					"\nDisFrom Down: " << distanceFromDown << 
-					"\nDisFrom Left: " << distanceFromLeft <<
-
-					"\n\n";
-			}
 		}
 	}
 }
@@ -143,19 +192,18 @@ void Weather::AdvectionOfClouds()
 Weather::Weather()
 {
 	setBordersTo();
+	SetWater("Water.png");
+	SetCloud("Cloud.png");
 }
 
 void Weather::Update()
 {
+	WaterCycle();
+
 	Projection();
 
 	AdvectionOfField();
 	AdvectionOfClouds();
-}
-
-float Weather::getDeltaTime() const
-{
-	return timeStep;
 }
 
 void Weather::setAllWindTo(Vec2 wind)

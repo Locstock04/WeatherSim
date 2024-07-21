@@ -20,22 +20,21 @@ private:
 
 	float lineArrowSize = 0.1f;
 	bool showSideLines = false;
-	bool showCentreLines = true;
+	bool showCentreLines = false;
 	bool showCentreCircles = true;
 	bool showDensity = false;
 	bool showWater = false;
+	bool showRain = false;
 
 	Vec2 setAllWindTo = { 0, 0 };
 
 	float guiDragSpeed = 0.1f;
 
-	bool updatingWeather = false;
+	bool updatingWeather = true;
 	
 	bool drawingSolid = true;
 
 	Vec2 previousCursorPos;
-
-	Image* image;
 
 	void DrawWindSideVelocities() const;
 	void DrawCentreWindVelocities() const;
