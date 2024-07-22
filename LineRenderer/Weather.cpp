@@ -59,14 +59,16 @@ void Weather::WaterCycle()
 	for (Cell& cell : map.data)
 	{
 		// Evaporation
-		if (cell.water) {
-			cell.density = std::min(cell.density + evaporationChange, maxCloudDensity);
+		if (cell.water > 0.0f) {
+			cell.density = std::min(cell.density + evaporationChange * cell.water, maxCloudDensity);
 		}
 		
 		// Percipitation
-		// If it raining and should stop, or if not and should be
-		if ((cell.raining && cell.density < stopRainDensity) || (!cell.raining && cell.density > startRainDensity)) {
-			cell.raining = !cell.raining;
+		if (cell.raining && cell.density < stopRainDensity) {
+			cell.raining = std::max(0.0f, cell.raining -= percipitationChange);
+		}
+		else if (!cell.raining && cell.density > startRainDensity) {
+			cell.raining = 1.0f;
 		}
 
 		
@@ -139,7 +141,7 @@ void Weather::SetWater(std::string path)
 	{
 		for (size_t r = 0; r < map.rows; r++)
 		{
-			map(c, r).water = (waterMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f) > 0.5f ? true : false;
+			map(c, r).water = (waterMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f);
 		}
 	}
 }
@@ -184,14 +186,36 @@ void Weather::AdvectionOfClouds()
 			float distanceFromLeft = prevPos.x - (prevC);
 
 			at.density = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, density));
-		}
+			
+
+			at.raining = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining));
+
+
+			//auto variableOffset = offsetof(Cell, raining);
+			//const bool upLeft = *((bool*)((char*)&(map.getConst(c, r)) + variableOffset));
+			//const bool upRight = *((bool*)((char*)&(map.getConst(c + 1, r)) + variableOffset));
+			//const bool downLeft = *((bool*)((char*)&(map.getConst(c, r - 1)) + variableOffset));
+			//const bool downRight = *((bool*)((char*)&(map.getConst(c + 1, r - 1)) + variableOffset));
+
+			//if (GetWeightedValue(upLeft, upRight, downLeft, downRight, distanceFromDown, distanceFromLeft) > 0.24) {
+			//	at.raining = true;
+			//}
+
+			
+			//if (SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining)) >= 0.5f) {
+			//	at.raining = true;
+			//}
+			
+			
+			//at.raining = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining)) > 0.5f;
+		}	
 	}
 }
 
 
 Weather::Weather()
 {
-	setBordersTo();
+	//setBordersTo();
 	SetWater("Water.png");
 	SetCloud("Cloud.png");
 }

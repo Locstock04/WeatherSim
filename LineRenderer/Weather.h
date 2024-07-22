@@ -46,9 +46,9 @@ public:
 		// Cloud
 		float density = 0.0f;
 
-		bool water = false;
+		float water = 0.0f;
 
-		bool raining = false;
+		float raining = 0.0f;
 
 
 		bool nonSolid = true;

@@ -148,8 +148,9 @@ void WeatherLineRenderer::Draw() const
 		{
 			for (size_t r = 0; r < weather.map.rows; r++)
 			{
-				if (weather.map.getConst(c, r).water) {
-					lines->DrawCircle(Vec2(c, r), 0.3f, {0.0f, 0.0f, 0.5f}, 3);
+				float water = weather.map.getConst(c, r).water;
+				if (water > 0.0f) {
+					lines->DrawCircle(Vec2(c, r), 0.3f, {0.0f, 0.0f, water}, 3);
 				}
 			}
 		}
@@ -159,8 +160,10 @@ void WeatherLineRenderer::Draw() const
 		{
 			for (size_t r = 0; r < weather.map.rows; r++)
 			{
-				if (weather.map.getConst(c, r).raining) {
-					lines->DrawCircle(Vec2(c, r), 0.3f, { 0.2f, 0.2f, 0.7f }, 5);
+				float raining = weather.map.getConst(c, r).raining;
+				//if (raining) 
+				{
+					lines->DrawCircle(Vec2(c, r), 0.3f, { raining * 0.2f, raining * 0.2f, raining * 0.7f }, 5);
 				}
 			}
 		}
