@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stb_image.h"
 #include <string>
 
 class Image {
@@ -15,7 +14,7 @@ public:
 
 	std::string path;
 
-	Image(std::string _path, int forceLoadType = STBI_default);
+	Image(std::string _path, int forceLoadType = 0/*STBI_default*/);
 
 	Image();
 };

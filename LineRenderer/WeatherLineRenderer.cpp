@@ -5,6 +5,9 @@
 
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 void WeatherLineRenderer::DrawWindSideVelocities() const
 {
@@ -34,13 +37,13 @@ void WeatherLineRenderer::DrawWindSideVelocities() const
 
 void WeatherLineRenderer::DrawCentreWindVelocities() const
 {
-	for (size_t c = 0; c < weather.map.cols; c++)
+	for (int c = 0; c < weather.map.cols; c++)
 	{
-		for (size_t r = 0; r < weather.map.rows; r++)
+		for (int r = 0; r < weather.map.rows; r++)
 		{
-			Vec2 wind = weather.getAverageWindVelocityAt(c, r);
+			Vec2 wind = weather.getVelocityAt(c, r);
 			Vec2 pos(c, r);
-			DrawArrow(pos, pos + wind, ColourFromVector(wind));
+			DrawArrow(pos, pos + (wind * scaleLineLengthViewBy), ColourFromVector(wind));
 		}
 	}
 }
@@ -49,13 +52,15 @@ void WeatherLineRenderer::GUI()
 {
 	if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::DragFloat("Scale Line Length", &scaleLineLengthViewBy, guiDragSpeed);
-		ImGui::DragFloat("Between Line Distance", &distanceBetween2AdjacentCells, guiDragSpeed);
 		ImGui::Checkbox("Draw Side Lines", &showSideLines);
 		ImGui::Checkbox("Draw Centre Lines", &showCentreLines);
 		ImGui::Checkbox("Draw Centre Circles", &showCentreCircles);
 		ImGui::Checkbox("Draw Density (Cross)", &showDensity);
 		ImGui::Checkbox("Draw Water", &showWater);
 		ImGui::Checkbox("Draw Rain", &showRain);
+		ImGui::Checkbox("Draw Temperature", &showTemperature);
+		ImGui::Checkbox("Draw Streamlines", &showStreamlines);
+		ImGui::DragInt("Streamlines Depth", &streamlineDepth, 0.5f, 0);
 		ImGui::Checkbox("Update Simulation", &updatingWeather);
 		//ImGui::Checkbox("Jacobi (non Gauss-Seidel)", &weather.jacobi);
 		ImGui::Checkbox("Right click draw solid", &drawingSolid);
@@ -123,52 +128,49 @@ void WeatherLineRenderer::Draw() const
 	}
 	if (showCentreLines) {
 		DrawCentreWindVelocities();
-	}
-	if (showCentreCircles) {
-		for (size_t c = 0; c < weather.map.cols; c++)
+	}	
+	for (int c = 0; c < weather.map.cols; c++)
+	{
+		for (int r = 0; r < weather.map.rows; r++)
 		{
-			for (size_t r = 0; r < weather.map.rows; r++)
-			{
-				lines->DrawCircle(Vec2(c, r), 0.3, ColourFromVector(weather.getAverageWindVelocityAt(c, r)), 4);
+			if (showCentreCircles) {
+				lines->DrawCircle(Vec2(c, r), 0.3f, ColourFromVector(weather.getVelocityAt(c, r)), 4);
 			}
-		}
-	}
-	if (showDensity) {
-		for (size_t c = 0; c < weather.map.cols; c++)
-		{
-			for (size_t r = 0; r < weather.map.rows; r++)
-			{
+			if (showDensity) {
 				float density = std::fminf(weather.map.getConst(c, r).density, 1.0f);
-				lines->DrawCross(Vec2(c, r), 0.3, Colour(density, density, density));
+				lines->DrawCross(Vec2(c, r), 0.3f, Colour(density, density, density));
 			}
-		}
-	}
-	if (showWater) {
-		for (size_t c = 0; c < weather.map.cols; c++)
-		{
-			for (size_t r = 0; r < weather.map.rows; r++)
-			{
+			if (showWater) {
 				float water = weather.map.getConst(c, r).water;
 				if (water > 0.0f) {
-					lines->DrawCircle(Vec2(c, r), 0.3f, {0.0f, 0.0f, water}, 3);
+					lines->DrawCircle(Vec2(c, r), 0.15f, { 0.0f, 0.0f, water }, 3);
 				}
 			}
-		}
-	}
-	if (showRain) {
-		for (size_t c = 0; c < weather.map.cols; c++)
-		{
-			for (size_t r = 0; r < weather.map.rows; r++)
-			{
+			if (showRain) {
 				float raining = weather.map.getConst(c, r).raining;
-				//if (raining) 
-				{
-					lines->DrawCircle(Vec2(c, r), 0.3f, { raining * 0.2f, raining * 0.2f, raining * 0.7f }, 5);
+				if (raining) {
+					lines->DrawCircle(Vec2(c, r), 0.3f, { raining * 0.2f, raining * 0.2f, raining * 0.7f }, 3);
 				}
 			}
+			if (showTemperature) {
+				float hue = weather.TemperatureAsPercent(weather.map.getConst(c, r).currentTemperature) * -0.75f;
+				lines->DrawCircle(Vec2(c, r), 0.3f, hslToRgb(hue, 1.0f, 0.5f), 2);
+			}
+			if (showStreamlines) {
+				Vec2 pos = Vec2(c, r);
+				Vec2 vel = weather.getVelocityAt(pos.x, pos.y);
+				lines->AddPointToLine(pos, ColourFromVector(vel));
+				for (size_t i = 0; i < streamlineDepth; i++)
+				{
+					pos += vel;
+					lines->AddPointToLine(pos, ColourFromVector(vel));
+					vel = weather.getVelocityAt(pos.x, pos.y);
+				}
+				lines->FinishLineStrip();
+			}
 		}
-
 	}
+
 }
 
 void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour) const
@@ -183,10 +185,6 @@ void WeatherLineRenderer::DrawArrow(Vec2 begin, Vec2 end, Colour colour) const
 	lines->AddPointToLine(end);
 	lines->AddPointToLine(end - (normal * lineArrowSize) - (normal.GetRotatedBy90()) * lineArrowSize);
 	lines->FinishLineStrip();
-
-	//lines->AddPointToLine(leftLineEnd - (leftWindNormal * lineArrowSize) + (leftWindNormal.GetRotatedBy90()) * lineArrowSize);
-	//lines->AddPointToLine(leftLineEnd);
-	//lines->AddPointToLine(leftLineEnd - (leftWindNormal * lineArrowSize) - (leftWindNormal.GetRotatedBy90()) * lineArrowSize);
 }
 
 Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
@@ -198,7 +196,9 @@ Colour WeatherLineRenderer::ColourFromVector(Vec2 vec)
 
 WeatherLineRenderer::WeatherLineRenderer()
 {
-
+	SetWater("Water.png");
+	SetCloud("Cloud.png");
+	SetAverageTemperature("Average Temperature");
 }
 
 void WeatherLineRenderer::Update(float delta)
@@ -257,6 +257,60 @@ void WeatherLineRenderer::OnMiddleClick()
 }
 
 void WeatherLineRenderer::OnMiddleRelease()
+{
+
+}
+
+
+Vec2 Weather::getVelocityAt(float x, float y) const
+{
+	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
+}
+
+void WeatherLineRenderer::SetWater(std::string path)
+{
+	Image waterMap = Image(path, STBI_grey);
+	if (waterMap.data == nullptr) { return; }
+
+	if (waterMap.width != weather.map.cols || waterMap.height != weather.map.rows) {
+		std::cout << "Warning: Mismatched image size with map\n";
+		return;
+	}
+
+	for (size_t c = 0; c < weather.map.cols; c++)
+	{
+		for (size_t r = 0; r < weather.map.rows; r++)
+		{
+			weather.map(c, r).water = (waterMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f);
+		}
+	}
+}
+
+void WeatherLineRenderer::SetCloud(std::string path)
+{
+	Image cloudMap = Image(path, STBI_grey);
+	if (cloudMap.data == nullptr) { return; }
+
+	if (cloudMap.width != weather.map.cols || cloudMap.height != weather.map.rows) {
+		std::cout << "Warning: Mismatched image size with map\n";
+		return;
+	}
+
+	for (size_t c = 0; c < weather.map.cols; c++)
+	{
+		for (size_t r = 0; r < weather.map.rows; r++)
+		{
+			weather.map(c, r).density = cloudMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
+		}
+	}
+}
+
+void WeatherLineRenderer::SetSolid(std::string path)
+{
+
+}
+
+void WeatherLineRenderer::SetAverageTemperature(std::string path)
 {
 
 }

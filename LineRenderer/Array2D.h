@@ -6,7 +6,8 @@
 // TODO: This is specifically made for the weather map
 
 template<typename T, int _cols, int _rows>
-class Array2D // TODO: Named array but really using a vector, this class is poorly named in general
+// TODO: Name this as the container it actually is
+class Array2D // TODO: Named array but really using a vector, this class is poorly named in general. 
 {
 private:
 
@@ -17,8 +18,8 @@ public:
 public:
 
 	// TODO: If these are const then the assignment operator gets implicitly deleted.
-	int rows = _rows;
-	int cols = _cols;
+	const int rows = _rows;
+	const int cols = _cols;
 
 	Array2D();
 	T& operator ()(int col, int row);

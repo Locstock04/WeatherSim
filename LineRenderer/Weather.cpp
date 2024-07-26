@@ -3,7 +3,8 @@
 #include <iostream>
 
 // TODO: Will this cause an issue if happens in multiple spots, could potentially cause some issues
-#define STB_IMAGE_IMPLEMENTATION
+
+
 #include "stb_image.h"
 
 void Weather::Projection()
@@ -65,15 +66,18 @@ void Weather::WaterCycle()
 		
 		// Percipitation
 		if (cell.raining && cell.density < stopRainDensity) {
-			cell.raining = std::max(0.0f, cell.raining -= percipitationChange);
+			cell.raining = std::max(0.0f, cell.raining - percipitationChange);
 		}
-		else if (!cell.raining && cell.density > startRainDensity) {
+		else if (cell.density > startRainDensity) {
 			cell.raining = 1.0f;
 		}
 
+		if (cell.raining <= stopRainPercent) {
+			cell.raining = 0.0f;
+		}
 		
 		if (cell.raining) {
-			cell.density = std::max(cell.density - percipitationChange, 0.0f);
+			cell.density = std::max(cell.density - (percipitationChange * cell.raining), 0.0f);
 		}
 	}
 }
@@ -122,48 +126,6 @@ float Weather::getYVelocityAt(float x, float y) const
 	return SampleField(cellC, cellR, distanceFromDown, distanceFromLeft, offsetof(Cell, upVelocity));
 }
 
-Vec2 Weather::getVelocityAt(float x, float y) const
-{
-	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
-}
-
-void Weather::SetWater(std::string path)
-{
-	waterMap = Image(path, STBI_grey);
-	if (waterMap.data == nullptr) { return; }
-
-	if (waterMap.width != map.cols || waterMap.height != map.rows) {
-		std::cout << "Warning: Mismatched image size with map\n";
-		return;
-	}
-
-	for (size_t c = 0; c < map.cols; c++)
-	{
-		for (size_t r = 0; r < map.rows; r++)
-		{
-			map(c, r).water = (waterMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f);
-		}
-	}
-}
-
-void Weather::SetCloud(std::string path)
-{
-	cloudMap = Image(path, STBI_grey);
-	if (cloudMap.data == nullptr) { return; }
-
-	if (cloudMap.width != map.cols || cloudMap.height != map.rows) {
-		std::cout << "Warning: Mismatched image size with map\n";
-		return;
-	}
-
-	for (size_t c = 0; c < map.cols; c++)
-	{
-		for (size_t r = 0; r < map.rows; r++)
-		{
-			map(c, r).density = cloudMap.data[((map.rows - 1 - r) * map.rows + c) + 0] / 256.0f;
-		}
-	}
-}
 
 void Weather::AdvectionOfClouds()
 {
@@ -185,29 +147,15 @@ void Weather::AdvectionOfClouds()
 			float distanceFromDown = prevPos.y - (prevR - 1.0f);
 			float distanceFromLeft = prevPos.x - (prevC);
 
+
+
 			at.density = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, density));
 			
-
 			at.raining = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining));
 
-
-			//auto variableOffset = offsetof(Cell, raining);
-			//const bool upLeft = *((bool*)((char*)&(map.getConst(c, r)) + variableOffset));
-			//const bool upRight = *((bool*)((char*)&(map.getConst(c + 1, r)) + variableOffset));
-			//const bool downLeft = *((bool*)((char*)&(map.getConst(c, r - 1)) + variableOffset));
-			//const bool downRight = *((bool*)((char*)&(map.getConst(c + 1, r - 1)) + variableOffset));
-
-			//if (GetWeightedValue(upLeft, upRight, downLeft, downRight, distanceFromDown, distanceFromLeft) > 0.24) {
-			//	at.raining = true;
-			//}
-
-			
-			//if (SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining)) >= 0.5f) {
-			//	at.raining = true;
-			//}
-			
-			
-			//at.raining = SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, raining)) > 0.5f;
+			at.currentTemperature = 
+				(SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, currentTemperature)) * (1 - temperatureStickToAveragePercent))
+			  + (SampleField(prevC, prevR, distanceFromDown, distanceFromLeft, offsetof(Cell, averageTemperature)) * (    temperatureStickToAveragePercent));
 		}	
 	}
 }
@@ -215,9 +163,6 @@ void Weather::AdvectionOfClouds()
 
 Weather::Weather()
 {
-	//setBordersTo();
-	SetWater("Water.png");
-	SetCloud("Cloud.png");
 }
 
 void Weather::Update()
@@ -239,7 +184,7 @@ void Weather::setAllWindTo(Vec2 wind)
 	}
 }
 
-void Weather::setBordersTo()
+void Weather::setBordersTo(bool solid)
 {
 	for (int c = 0; c < map.cols; c++)
 	{
@@ -248,7 +193,7 @@ void Weather::setBordersTo()
 			if (c != 0 && c != map.cols - 1 && r != 0 && r != map.rows - 1) { continue; }
 
 			Cell& cell = map(c, r);
-			cell.nonSolid = false;
+			cell.nonSolid = !solid;
 		}
 	}
 
@@ -256,8 +201,6 @@ void Weather::setBordersTo()
 
 void Weather::ForceIncompressibilityAt(int col, int row)
 {
-	// TODO: Wall suppport, more general solution
-
 	Cell& atCell = map(col, row);
 	if (!atCell.nonSolid) { return; }
 	Cell& downCell = map(col, row - 1);
@@ -287,7 +230,12 @@ void Weather::ForceIncompressibilityAt(int col, int row)
 	//atCell.pressure += abs(balance) * ((atCell.density * 1) / timeStep);
 }
 
-Vec2 Weather::getAverageWindVelocityAt(int col, int row) const
+float Weather::TemperatureAsPercent(float temperature) const
+{
+	return (temperature - minTemperature) / (maxTemperature - minTemperature);
+}
+
+Vec2 Weather::getVelocityAt(int col, int row) const
 {
 	const Cell& at = map.getConst(col, row);
 	const Cell& below = map.getConst(col, row - 1);

@@ -14,17 +14,19 @@ private:
 	Weather weather;
 
 	float scaleLineLengthViewBy = 0.4f;
-	float distanceBetween2AdjacentCells = 1.0f;
 	
-	float dragMultiplier = 1.0f;
+	float dragMultiplier = 10.0f;
 
 	float lineArrowSize = 0.1f;
 	bool showSideLines = false;
 	bool showCentreLines = false;
-	bool showCentreCircles = true;
+	bool showCentreCircles = false;
 	bool showDensity = false;
 	bool showWater = false;
 	bool showRain = false;
+	bool showTemperature = false;
+	int streamlineDepth = 2;
+	bool showStreamlines = false;
 
 	Vec2 setAllWindTo = { 0, 0 };
 
@@ -50,6 +52,11 @@ private:
 	static float hueToRgb(float p, float q, float t);
 
 	void Draw() const;
+
+	void SetWater(std::string path);
+	void SetCloud(std::string path);
+	void SetSolid(std::string path);
+	void SetAverageTemperature(std::string path);
 
 public:
 

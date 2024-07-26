@@ -2,6 +2,11 @@
 
 #include <iostream>
 
+// TODO: Will this cause an issue if happens in multiple spots, could potentially cause some issues
+
+#include "stb_image.h"
+
+
 Image::Image(std::string _path, int forceLoadType) :
 	path(_path)
 {
