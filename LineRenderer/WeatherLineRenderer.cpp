@@ -11,17 +11,17 @@
 
 void WeatherLineRenderer::DrawWindSideVelocities() const
 {
-	for (size_t c = 0; c < weather.map.cols; c++)
+	for (int c = 0; c < weather.map.cols; c++)
 	{
-		for (size_t r = 0; r < weather.map.rows; r++)
+		for (int r = 0; r < weather.map.rows; r++)
 		{
 			//if (r != c) { continue; }
 			//Vec2 cellPos = Vec2(c, r) * distanceBetween2AdjacentCells;
 
 			//lines->DrawCircle(Vec2(c, r), 0.3);
 
-			Vec2 leftPos = Vec2(c - 0.5f, r);
-			Vec2 topPos = Vec2(c, r + 0.5f);
+			Vec2 leftPos = Vec2((float)c - 0.5f, (float)r);
+			Vec2 topPos = Vec2((float)c, (float)r + 0.5f);
 			float left = weather.map.getConst(c, r).leftVelocity;
 			float top = weather.map.getConst(c, r).upVelocity;
 			Colour leftColour = ColourFromVector({ left, 0.0f });
@@ -42,7 +42,7 @@ void WeatherLineRenderer::DrawCentreWindVelocities() const
 		for (int r = 0; r < weather.map.rows; r++)
 		{
 			Vec2 wind = weather.getVelocityAt(c, r);
-			Vec2 pos(c, r);
+			Vec2 pos((float)c, (float)r);
 			DrawArrow(pos, pos + (wind * scaleLineLengthViewBy), ColourFromVector(wind));
 		}
 	}
@@ -113,7 +113,7 @@ float WeatherLineRenderer::hueToRgb(float p, float q, float t)
 		return q;
 	}
 	else if (t < 2.0 / 3.0f) {
-		return p + (q - p) * (2. / 3 - t) * 6;
+		return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
 	}
 	else {
 		return p;
@@ -134,30 +134,30 @@ void WeatherLineRenderer::Draw() const
 		for (int r = 0; r < weather.map.rows; r++)
 		{
 			if (showCentreCircles) {
-				lines->DrawCircle(Vec2(c, r), 0.3f, ColourFromVector(weather.getVelocityAt(c, r)), 4);
+				lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, ColourFromVector(weather.getVelocityAt(c, r)), 4);
 			}
 			if (showDensity) {
 				float density = std::fminf(weather.map.getConst(c, r).density, 1.0f);
-				lines->DrawCross(Vec2(c, r), 0.3f, Colour(density, density, density));
+				lines->DrawCross(Vec2((float)c, (float)r), 0.3f, Colour(density, density, density));
 			}
 			if (showWater) {
 				float water = weather.map.getConst(c, r).water;
 				if (water > 0.0f) {
-					lines->DrawCircle(Vec2(c, r), 0.15f, { 0.0f, 0.0f, water }, 3);
+					lines->DrawCircle(Vec2((float)c, (float)r), 0.15f, { 0.0f, 0.0f, water }, 3);
 				}
 			}
 			if (showRain) {
 				float raining = weather.map.getConst(c, r).raining;
 				if (raining) {
-					lines->DrawCircle(Vec2(c, r), 0.3f, { raining * 0.2f, raining * 0.2f, raining * 0.7f }, 3);
+					lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, { raining * 0.2f, raining * 0.2f, raining * 0.7f }, 3);
 				}
 			}
 			if (showTemperature) {
 				float hue = weather.TemperatureAsPercent(weather.map.getConst(c, r).currentTemperature) * -0.75f;
-				lines->DrawCircle(Vec2(c, r), 0.3f, hslToRgb(hue, 1.0f, 0.5f), 2);
+				lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, hslToRgb(hue, 1.0f, 0.5f), 2);
 			}
 			if (showStreamlines) {
-				Vec2 pos = Vec2(c, r);
+				Vec2 pos = Vec2((float)c, (float)r);
 				Vec2 vel = weather.getVelocityAt(pos.x, pos.y);
 				lines->AddPointToLine(pos, ColourFromVector(vel));
 				for (size_t i = 0; i < streamlineDepth; i++)
@@ -213,19 +213,21 @@ void WeatherLineRenderer::Update(float delta)
 
 	if (rightMouseDown && leftMouseDown) {
 		Vec2 cellPos = worldToCellPos(cursorPos.x, cursorPos.y);
-		weather.map(cellPos.x, cellPos.y).density += 1 * weather.timeStep;
+		weather.map((int)cellPos.x, (int)cellPos.y).density += 1 * weather.timeStep;
 	}
 
 	else if (rightMouseDown) {
 		Vec2 cellPos = worldToCellPos(cursorPos.x, cursorPos.y);
-		weather.map(cellPos.x, cellPos.y).nonSolid = !drawingSolid;
+		weather.map((int)cellPos.x, (int)cellPos.y).nonSolid = !drawingSolid;
 	}
 
 	else if (leftMouseDown) {
-		Vec2 intPos = worldToCellPos(cursorPos.x, cursorPos.y);
-		Weather::Cell& atCell = weather.map(intPos.x, intPos.y);
-		Weather::Cell& rightCell = weather.map(intPos.x + 1, intPos.y);
-		Weather::Cell& downCell = weather.map(intPos.x, intPos.y - 1);
+		Vec2 pos = worldToCellPos(cursorPos.x, cursorPos.y);
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		Weather::Cell& atCell = weather.map(x, y);
+		Weather::Cell& rightCell = weather.map(x + 1, y);
+		Weather::Cell& downCell = weather.map(x, y - 1);
 		Vec2 newVelocity = (cursorPos - previousCursorPos) * dragMultiplier;
 		atCell.leftVelocity += newVelocity.x;
 		atCell.upVelocity += newVelocity.y;
@@ -277,9 +279,9 @@ void WeatherLineRenderer::SetWater(std::string path)
 		return;
 	}
 
-	for (size_t c = 0; c < weather.map.cols; c++)
+	for (int c = 0; c < weather.map.cols; c++)
 	{
-		for (size_t r = 0; r < weather.map.rows; r++)
+		for (int r = 0; r < weather.map.rows; r++)
 		{
 			weather.map(c, r).water = (waterMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f);
 		}
@@ -296,9 +298,9 @@ void WeatherLineRenderer::SetCloud(std::string path)
 		return;
 	}
 
-	for (size_t c = 0; c < weather.map.cols; c++)
+	for (int c = 0; c < weather.map.cols; c++)
 	{
-		for (size_t r = 0; r < weather.map.rows; r++)
+		for (int r = 0; r < weather.map.rows; r++)
 		{
 			weather.map(c, r).density = cloudMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
 		}

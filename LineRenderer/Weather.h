@@ -8,7 +8,10 @@
 
 #include "Image.h"
 
+// TODO: This should be set when the weather system is created
 constexpr int MAP_SIZE = 50;
+
+//TODO: probably put all the weather stuff in a namespace
 
 class Weather
 {

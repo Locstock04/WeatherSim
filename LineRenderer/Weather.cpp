@@ -9,11 +9,11 @@
 
 void Weather::Projection()
 {
-	for (size_t i = 0; i < projectionIterations; i++)
+	for (int i = 0; i < projectionIterations; i++)
 	{
-		for (size_t col = 0; col < map.cols; col++)
+		for (int col = 0; col < map.cols; col++)
 		{
-			for (size_t row = 0; row < map.rows; row++)
+			for (int row = 0; row < map.rows; row++)
 			{
 				ForceIncompressibilityAt(col, row);
 			}
@@ -107,8 +107,8 @@ float Weather::GetWeightedValue(float upLeft, float upRight, float downLeft, flo
 
 float Weather::getXVelocityAt(float x, float y) const
 {
-	int cellC = round(x);
-	int cellR = ceil(y);
+	int cellC = (int)round(x);
+	int cellR = (int)ceil(y);
 	float distanceFromDown = y - (cellR - 1.0f);
 	float distanceFromLeft = x - (cellC - 0.5f);
 
@@ -117,8 +117,8 @@ float Weather::getXVelocityAt(float x, float y) const
 
 float Weather::getYVelocityAt(float x, float y) const
 {
-	int cellC = floor(x);
-	int cellR = round(y);
+	int cellC = (int)floor(x);
+	int cellR = (int)round(y);
 
 	float distanceFromDown = y - (cellR - 0.5f);
 	float distanceFromLeft = x - (cellC);
@@ -141,8 +141,8 @@ void Weather::AdvectionOfClouds()
 			Vec2 vel = getVelocityAt(c, r);
 
 			Vec2 prevPos = pos - (vel * timeStep);
-			int prevC = floor(prevPos.x);
-			int prevR = ceil(prevPos.y);
+			int prevC = (int)floor(prevPos.x);
+			int prevR = (int)ceil(prevPos.y);
 
 			float distanceFromDown = prevPos.y - (prevR - 1.0f);
 			float distanceFromLeft = prevPos.x - (prevC);
