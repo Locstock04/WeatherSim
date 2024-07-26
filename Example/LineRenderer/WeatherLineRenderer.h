@@ -7,6 +7,8 @@
 
 #include "Image.h"
 
+using LocWeather::Weather;
+
 
 class WeatherLineRenderer : public Application
 {
@@ -57,6 +59,8 @@ private:
 	void SetCloud(std::string path);
 	void SetSolid(std::string path);
 	void SetAverageTemperature(std::string path);
+
+	Vec2 LocVecToVec(LocWeather::Vec2 v) const;
 
 public:
 

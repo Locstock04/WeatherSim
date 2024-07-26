@@ -8,6 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+using LocWeather::Weather;
 
 void WeatherLineRenderer::DrawWindSideVelocities() const
 {
@@ -41,7 +42,7 @@ void WeatherLineRenderer::DrawCentreWindVelocities() const
 	{
 		for (int r = 0; r < weather.map.rows; r++)
 		{
-			Vec2 wind = weather.getVelocityAt(c, r);
+			Vec2 wind = LocVecToVec(weather.getVelocityAt(c, r));
 			Vec2 pos((float)c, (float)r);
 			DrawArrow(pos, pos + (wind * scaleLineLengthViewBy), ColourFromVector(wind));
 		}
@@ -69,7 +70,7 @@ void WeatherLineRenderer::GUI()
 		ImGui::DragFloat("timeStep", &weather.timeStep);
 		ImGui::DragFloat2("Wind Editor", &setAllWindTo.x, guiDragSpeed);
 		if (ImGui::Button("Set Wind")) {
-			weather.setAllWindTo(setAllWindTo);
+			weather.setAllWindTo(LocWeather::Vec2(setAllWindTo.x, setAllWindTo.y));
 		}
 	}
 	ImGui::End();
@@ -134,7 +135,7 @@ void WeatherLineRenderer::Draw() const
 		for (int r = 0; r < weather.map.rows; r++)
 		{
 			if (showCentreCircles) {
-				lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, ColourFromVector(weather.getVelocityAt(c, r)), 4);
+				lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, ColourFromVector(LocVecToVec(weather.getVelocityAt(c, r))), 4);
 			}
 			if (showDensity) {
 				float density = std::fminf(weather.map.getConst(c, r).density, 1.0f);
@@ -158,13 +159,13 @@ void WeatherLineRenderer::Draw() const
 			}
 			if (showStreamlines) {
 				Vec2 pos = Vec2((float)c, (float)r);
-				Vec2 vel = weather.getVelocityAt(pos.x, pos.y);
+				Vec2 vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y));
 				lines->AddPointToLine(pos, ColourFromVector(vel));
 				for (size_t i = 0; i < streamlineDepth; i++)
 				{
 					pos += vel;
 					lines->AddPointToLine(pos, ColourFromVector(vel));
-					vel = weather.getVelocityAt(pos.x, pos.y);
+					vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y));
 				}
 				lines->FinishLineStrip();
 			}
@@ -263,12 +264,6 @@ void WeatherLineRenderer::OnMiddleRelease()
 
 }
 
-
-Vec2 Weather::getVelocityAt(float x, float y) const
-{
-	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
-}
-
 void WeatherLineRenderer::SetWater(std::string path)
 {
 	Image waterMap = Image(path, STBI_grey);
@@ -315,4 +310,9 @@ void WeatherLineRenderer::SetSolid(std::string path)
 void WeatherLineRenderer::SetAverageTemperature(std::string path)
 {
 
+}
+
+Vec2 WeatherLineRenderer::LocVecToVec(LocWeather::Vec2 v) const
+{
+	return Vec2(v.x, v.y);
 }

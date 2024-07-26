@@ -1,5 +1,8 @@
 
 /.vs
-/LineRenderer/x64
 /x64
 Working/imgui.ini
+/Example/LineRenderer/x64
+Example/Working/imgui.ini
+/Example/x64
+/Library/WeatherLibrary/x64

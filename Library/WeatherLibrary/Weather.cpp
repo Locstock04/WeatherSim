@@ -2,10 +2,9 @@
 
 #include <iostream>
 
-// TODO: Will this cause an issue if happens in multiple spots, could potentially cause some issues
+#include <math.h>
 
-
-#include "stb_image.h"
+using LocWeather::Weather;
 
 void Weather::Projection()
 {
@@ -103,6 +102,11 @@ float Weather::GetWeightedValue(float upLeft, float upRight, float downLeft, flo
 
 	return upWeight *   (leftWeight * upLeft   + rightWeight * upRight) +
 		   downWeight * (leftWeight * downLeft + rightWeight * downRight);
+}
+
+LocWeather::Vec2 Weather::getVelocityAt(float x, float y) const
+{
+	return { getXVelocityAt(x, y), getYVelocityAt(x, y) };
 }
 
 float Weather::getXVelocityAt(float x, float y) const
@@ -235,7 +239,7 @@ float Weather::TemperatureAsPercent(float temperature) const
 	return (temperature - minTemperature) / (maxTemperature - minTemperature);
 }
 
-Vec2 Weather::getVelocityAt(int col, int row) const
+LocWeather::Vec2 Weather::getVelocityAt(int col, int row) const
 {
 	const Cell& at = map.getConst(col, row);
 	const Cell& below = map.getConst(col, row - 1);

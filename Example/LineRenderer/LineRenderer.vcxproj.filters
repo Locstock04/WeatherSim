@@ -62,9 +62,6 @@
     <ClCompile Include="WeatherLineRenderer.cpp">
       <Filter>Weather</Filter>
     </ClCompile>
-    <ClCompile Include="Weather.cpp">
-      <Filter>Weather</Filter>
-    </ClCompile>
     <ClCompile Include="Image.cpp">
       <Filter>Weather</Filter>
     </ClCompile>
@@ -145,13 +142,7 @@
     <ClInclude Include="TextStream.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Array2D.h">
-      <Filter>Weather</Filter>
-    </ClInclude>
     <ClInclude Include="WeatherLineRenderer.h">
-      <Filter>Weather</Filter>
-    </ClInclude>
-    <ClInclude Include="Weather.h">
       <Filter>Weather</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
