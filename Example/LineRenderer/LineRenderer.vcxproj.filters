@@ -44,9 +44,6 @@
     <ClCompile Include="Example.cpp">
       <Filter>Game\Examples</Filter>
     </ClCompile>
-    <ClCompile Include="DotClicker.cpp">
-      <Filter>Game\Examples</Filter>
-    </ClCompile>
     <ClCompile Include="Vec2.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -125,9 +122,6 @@
       <Filter>ThirdParty\imgui</Filter>
     </ClInclude>
     <ClInclude Include="Example.h">
-      <Filter>Game\Examples</Filter>
-    </ClInclude>
-    <ClInclude Include="DotClicker.h">
       <Filter>Game\Examples</Filter>
     </ClInclude>
     <ClInclude Include="Application.h">

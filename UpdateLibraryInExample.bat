@@ -1,0 +1,5 @@
+Copy "%~dp0Library\WeatherLibrary\Weather.h" "%~dp0Example\WeatherLibrary"
+Copy "%~dp0Library\WeatherLibrary\Vec2.h" "%~dp0Example\WeatherLibrary"
+Copy "%~dp0Library\WeatherLibrary\Array2D.h" "%~dp0Example\WeatherLibrary"
+Copy "%~dp0Library\x64\Release\WeatherLibrary_release.lib" "%~dp0Example\WeatherLibrary"
+Copy "%~dp0Library\x64\Debug\WeatherLibrary_debug.lib" "%~dp0Example\WeatherLibrary"

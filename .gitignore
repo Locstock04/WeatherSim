@@ -6,3 +6,7 @@ Working/imgui.ini
 Example/Working/imgui.ini
 /Example/x64
 /Library/WeatherLibrary/x64
+/Example/.vs
+/Library/.vs
+/Library/x64
+/Example/WeatherLibrary
