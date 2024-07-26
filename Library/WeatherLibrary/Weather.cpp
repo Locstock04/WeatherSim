@@ -165,8 +165,9 @@ void Weather::AdvectionOfClouds()
 }
 
 
-Weather::Weather()
+LocWeather::Weather::Weather(int cols, int rows)
 {
+	map.Resize(cols, rows);
 }
 
 void Weather::Update()

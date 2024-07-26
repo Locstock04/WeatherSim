@@ -1,12 +1,12 @@
 #include "WeatherLineRenderer.h"+
 
-
 #include "imgui.h"
 
-#include <iostream>
+#define STB_IMAGE_IMPLEMENTATION  
+//#include "stb_image.h"
+#include "Image.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <iostream>
 
 using LocWeather::Weather;
 

@@ -5,15 +5,12 @@
 
 #include "Weather.h"
 
-#include "Image.h"
-
 using LocWeather::Weather;
-
 
 class WeatherLineRenderer : public Application
 {
 private:
-	Weather weather;
+	Weather weather = Weather(50, 50);
 
 	float scaleLineLengthViewBy = 0.4f;
 	

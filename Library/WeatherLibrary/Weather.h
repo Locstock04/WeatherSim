@@ -9,10 +9,9 @@
 namespace LocWeather {
 
 
-	// TODO: This should be set when the weather system is created
-	constexpr int MAP_SIZE = 50;
 
-	//TODO: probably put all the weather stuff in a namespace
+	// TODO: This should be set when the weather system is created
+	constexpr int DEFAULT_MAP_SIZE = 10;
 
 	class Weather
 	{
@@ -56,15 +55,16 @@ namespace LocWeather {
 			bool nonSolid = true;
 
 			//TODO: Pressure
+			//float pressure;
 
 			float averageTemperature = 10.0f;
 			float currentTemperature = 10.0f;
 
 		};
 
-		Array2D<Cell, MAP_SIZE, MAP_SIZE> map;
+		Array2D<Cell, DEFAULT_MAP_SIZE, DEFAULT_MAP_SIZE> map;
 
-		Weather();
+		Weather(int cols, int rows);
 		void Update();
 
 

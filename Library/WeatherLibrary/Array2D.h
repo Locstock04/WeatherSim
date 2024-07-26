@@ -3,6 +3,7 @@
 #include <vector>
 
 
+// TODO: This really doesn't need to be a templated class, originally had just done it for the fun of it
 // TODO: This is specifically made for the weather map
 
 template<typename T, int _cols, int _rows>
@@ -17,9 +18,8 @@ public:
 	int getIndex(int col, int row) const;
 public:
 
-	// TODO: If these are const then the assignment operator gets implicitly deleted.
-	const int rows = _rows;
-	const int cols = _cols;
+	int rows = _rows;
+	int cols = _cols;
 
 	Array2D();
 	T& operator ()(int col, int row);
@@ -27,6 +27,7 @@ public:
 	// TODO: Don't like having to have this function like this, is there any other ways to do what I want here
 	const T& getConst(int col, int row) const;
 
+	void Resize(int _cols, int _rows);
 
 
 	int getSize() const;
@@ -64,6 +65,14 @@ inline const T& Array2D<T, _cols, _rows>::getConst(int col, int row) const
 	row = (row % rows + rows) % rows;
 
 	return data.at(getIndex(col, row));
+}
+
+template<typename T, int _cols, int _rows>
+inline void Array2D<T, _cols, _rows>::Resize(int _cols, int _rows)
+{
+	cols = _cols;
+	rows = _rows;
+	data.resize(getSize());
 }
 
 template<typename T, int _cols, int _rows>
