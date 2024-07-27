@@ -10,7 +10,6 @@ namespace LocWeather {
 
 
 
-	// TODO: This should be set when the weather system is created
 	constexpr int DEFAULT_MAP_SIZE = 10;
 
 	class Weather
@@ -57,6 +56,7 @@ namespace LocWeather {
 			//TODO: Pressure
 			//float pressure;
 
+			// TODO: Temperature doesn't really do anything to the other parts of the weather, it could be made to affect:
 			float averageTemperature = 10.0f;
 			float currentTemperature = 10.0f;
 
@@ -73,6 +73,7 @@ namespace LocWeather {
 
 		float stopRainPercent = 0.1f;
 
+		// TODO: Should be set on weather creation
 		float timeStep = 1.0f / 60.0f;
 
 		float evaporationRate = 1.0f / 20.0f;
@@ -88,7 +89,8 @@ namespace LocWeather {
 		float minTemperature = -30.0f;
 		float maxTemperature = 50.0f;
 
-		float temperatureStickToAveragePercent = 0.5f;
+		// TODO: Should be set on weather creation
+		float temperatureStickToAveragePercent = 0.01f;
 
 		float TemperatureAsPercent(float temperature) const;
 

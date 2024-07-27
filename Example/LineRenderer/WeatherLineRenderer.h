@@ -26,6 +26,7 @@ private:
 	bool showTemperature = false;
 	int streamlineDepth = 2;
 	bool showStreamlines = false;
+	float streamlineMultiplier = 1.0f;
 
 	Vec2 setAllWindTo = { 0, 0 };
 

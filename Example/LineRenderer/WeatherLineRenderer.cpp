@@ -60,8 +60,10 @@ void WeatherLineRenderer::GUI()
 		ImGui::Checkbox("Draw Water", &showWater);
 		ImGui::Checkbox("Draw Rain", &showRain);
 		ImGui::Checkbox("Draw Temperature", &showTemperature);
+		ImGui::SliderFloat("Temperature Spread", &weather.temperatureStickToAveragePercent, 0.0f, 1.0f);
 		ImGui::Checkbox("Draw Streamlines", &showStreamlines);
-		ImGui::DragInt("Streamlines Depth", &streamlineDepth, 0.5f, 0);
+		ImGui::DragInt("Streamlines Depth", &streamlineDepth, 0.5f, 1, INT_MAX);
+		ImGui::DragFloat("Streamline step distance multiplier", &streamlineMultiplier, 0.01f);
 		ImGui::Checkbox("Update Simulation", &updatingWeather);
 		//ImGui::Checkbox("Jacobi (non Gauss-Seidel)", &weather.jacobi);
 		ImGui::Checkbox("Right click draw solid", &drawingSolid);
@@ -154,18 +156,18 @@ void WeatherLineRenderer::Draw() const
 				}
 			}
 			if (showTemperature) {
-				float hue = weather.TemperatureAsPercent(weather.map.getConst(c, r).currentTemperature) * -0.75f;
+				float hue = (weather.TemperatureAsPercent(weather.map.getConst(c, r).currentTemperature) * -0.75f) + 0.75f;
 				lines->DrawCircle(Vec2((float)c, (float)r), 0.3f, hslToRgb(hue, 1.0f, 0.5f), 2);
 			}
 			if (showStreamlines) {
 				Vec2 pos = Vec2((float)c, (float)r);
-				Vec2 vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y));
+				Vec2 vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y)) * streamlineMultiplier;
 				lines->AddPointToLine(pos, ColourFromVector(vel));
 				for (size_t i = 0; i < streamlineDepth; i++)
 				{
 					pos += vel;
 					lines->AddPointToLine(pos, ColourFromVector(vel));
-					vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y));
+					vel = LocVecToVec(weather.getVelocityAt(pos.x, pos.y)) * streamlineMultiplier;
 				}
 				lines->FinishLineStrip();
 			}
@@ -199,7 +201,8 @@ WeatherLineRenderer::WeatherLineRenderer()
 {
 	SetWater("Water.png");
 	SetCloud("Cloud.png");
-	SetAverageTemperature("Average Temperature");
+	SetSolid("Solid.png");
+	SetAverageTemperature("Average Temperature.png");
 }
 
 void WeatherLineRenderer::Update(float delta)
@@ -264,15 +267,17 @@ void WeatherLineRenderer::OnMiddleRelease()
 
 }
 
+#define IMAGE_CHECK(IMAGE)                                                 \
+if (IMAGE.data == nullptr) { return; }                                     \
+if (IMAGE.width != weather.map.cols || IMAGE.height != weather.map.rows) { \
+	std::cout << "Warning: Mismatched image size with map\n";              \
+	return;                                                                \
+}do{}while(false)
+
 void WeatherLineRenderer::SetWater(std::string path)
 {
 	Image waterMap = Image(path, STBI_grey);
-	if (waterMap.data == nullptr) { return; }
-
-	if (waterMap.width != weather.map.cols || waterMap.height != weather.map.rows) {
-		std::cout << "Warning: Mismatched image size with map\n";
-		return;
-	}
+	IMAGE_CHECK(waterMap);
 
 	for (int c = 0; c < weather.map.cols; c++)
 	{
@@ -286,12 +291,7 @@ void WeatherLineRenderer::SetWater(std::string path)
 void WeatherLineRenderer::SetCloud(std::string path)
 {
 	Image cloudMap = Image(path, STBI_grey);
-	if (cloudMap.data == nullptr) { return; }
-
-	if (cloudMap.width != weather.map.cols || cloudMap.height != weather.map.rows) {
-		std::cout << "Warning: Mismatched image size with map\n";
-		return;
-	}
+	IMAGE_CHECK(cloudMap);
 
 	for (int c = 0; c < weather.map.cols; c++)
 	{
@@ -304,12 +304,35 @@ void WeatherLineRenderer::SetCloud(std::string path)
 
 void WeatherLineRenderer::SetSolid(std::string path)
 {
+	Image solidMap = Image(path, STBI_grey);
+	IMAGE_CHECK(solidMap);
 
+	for (int c = 0; c < weather.map.cols; c++)
+	{
+		for (int r = 0; r < weather.map.rows; r++)
+		{
+			weather.map(c, r).nonSolid = (solidMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f) < 0.5f;
+		}
+	}
 }
 
 void WeatherLineRenderer::SetAverageTemperature(std::string path)
 {
+	Image temperatureMap = Image(path, STBI_grey);
+	IMAGE_CHECK(temperatureMap);
 
+	for (int c = 0; c < weather.map.cols; c++)
+	{
+		for (int r = 0; r < weather.map.rows; r++)
+		{
+			float value = temperatureMap.data[((weather.map.rows - 1 - r) * weather.map.rows + c) + 0] / 256.0f;
+			value = (value * (weather.maxTemperature - weather.minTemperature)) + weather.minTemperature;
+
+			LocWeather::Weather::Cell& cell = weather.map(c, r);
+			cell.averageTemperature = value;
+			cell.currentTemperature = value;
+		}
+	}
 }
 
 Vec2 WeatherLineRenderer::LocVecToVec(LocWeather::Vec2 v) const
